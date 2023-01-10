@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\deps\FNA\FNA.Core.csproj" />
+    <ProjectReference Include="..\deps\NativeFileDialogSharp\NativeFileDialogSharp\NativeFileDialogSharp.csproj" />
   </ItemGroup>
 
   <ItemGroup>
