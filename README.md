@@ -1,2 +1,2 @@
 # CritChanceStudio.Tools
-Helper framework used for CritChanceStudios internal tools (built on FNA &amp; ImGUI)
+Repository of internal game tools for Crit Chance Studios
