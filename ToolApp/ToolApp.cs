@@ -5,6 +5,8 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using SDL2;
 using ImGuiNET;
+using System;
+using System.Runtime.InteropServices;
 
 public class ToolApp : Game
 {
@@ -14,6 +16,9 @@ public class ToolApp : Game
 
     private List<EditorWindow> _windows = new List<EditorWindow>();
     private List<EditorWindow> _windowDestroyQueue = new List<EditorWindow>();
+    private object _dragDropPayload = null;
+    private IntPtr _dummy;
+    private EditorWindow _focusWindowQueue = null;
 
     public ToolApp(string windowTitle)
     {
@@ -28,6 +33,27 @@ public class ToolApp : Game
         IsFixedTimeStep = false;
 
         instance = this;
+
+        _dummy = Marshal.AllocHGlobal(4);
+    }
+
+    public void SetDragDropPayload<T>(T data)
+    {
+        _dragDropPayload = data;
+        ImGui.SetDragDropPayload(typeof(T).Name, _dummy, 4);
+    }
+
+    public unsafe bool AcceptDragDropPayload<T>(out T data)
+    {
+        var wtf = ImGui.AcceptDragDropPayload(typeof(T).Name);
+        if (wtf.NativePtr != null)
+        {
+            data = (T)_dragDropPayload;
+            return true;
+        }
+
+        data = default(T);
+        return false;
     }
 
     public T GetWindow<T>() where T : EditorWindow, new()
@@ -36,12 +62,14 @@ public class ToolApp : Game
         {
             if (win is T ret)
             {
+                _focusWindowQueue = ret;
                 return ret;
             }
         }
 
         T newWin = new T();
         _windows.Add(newWin);
+        _focusWindowQueue = newWin;
         return newWin;
     }
 
@@ -51,6 +79,7 @@ public class ToolApp : Game
         SDL.SDL_MaximizeWindow(Window.Handle);
         imguiRenderer = new ImGuiRenderer(this);
         imguiRenderer.RebuildFontAtlas();
+        ImGui.GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
     }
 
     protected override void UnloadContent()
@@ -58,10 +87,21 @@ public class ToolApp : Game
         base.UnloadContent();
     }
 
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        Marshal.FreeHGlobal(_dummy);
+    }
+
     protected override void Update(GameTime gameTime)
     {
         base.Update(gameTime);
         imguiRenderer.UpdateInput();
+
+        foreach (var window in _windows)
+        {
+            window.Update(gameTime);
+        }
     }
 
     protected virtual void OnMenuBarGUI()
@@ -98,6 +138,12 @@ public class ToolApp : Game
 
         foreach (var win in _windows)
         {
+            if (_focusWindowQueue == win)
+            {
+                _focusWindowQueue = null;
+                ImGui.SetNextWindowFocus();
+            }
+
             bool open = true;
             win.OnDrawWindow(ref open);
 

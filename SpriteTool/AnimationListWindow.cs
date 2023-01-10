@@ -32,6 +32,8 @@ public class AnimationListWindow : EditorWindow
             {
                 var anim = tool.activeDocument.animations[i];
 
+                var availableRect = ImGui.GetContentRegionAvail();
+
                 string animName = anim.name;
                 if (ImGui.InputText("##anim_" + i + "_name", ref animName, 1024, ImGuiInputTextFlags.EnterReturnsTrue))
                 {
@@ -39,8 +41,20 @@ public class AnimationListWindow : EditorWindow
                     anim.name = animName;
                 }
 
+                var rectMin = ImGui.GetItemRectMin();
+                var rectMax = ImGui.GetItemRectMax();
+                rectMax.X = rectMin.X + availableRect.X;
+
+                if (anim == tool.activeAnimation)
+                {
+                    ImGui.GetWindowDrawList().AddRect(rectMin, rectMax, new Microsoft.Xna.Framework.Color(1f, 1f, 0f).PackedValue);
+                }
+
                 ImGui.SameLine();
-                ImGui.Button("Edit");
+                if (ImGui.Button("Edit"))
+                {
+                    tool.activeAnimation = anim;
+                }
                 ImGui.SameLine();
                 ImGui.Button("Delete");
             }

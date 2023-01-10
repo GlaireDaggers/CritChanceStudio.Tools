@@ -15,6 +15,8 @@ public class SpriteToolApp : ToolApp
 
     public TextureManager textureManager;
     public DocumentState activeDocument = new DocumentState();
+    public Animation activeAnimation = null;
+    public Keyframe activeKeyframe = null;
 
     private Stack<UndoState> _undoStates = new Stack<UndoState>();
     private Stack<UndoState> _redoStates = new Stack<UndoState>();
@@ -29,7 +31,7 @@ public class SpriteToolApp : ToolApp
         _undoStates.Push(new UndoState
         {
             title = title,
-            state = (DocumentState)activeDocument.Clone()
+            state = activeDocument.Clone()
         });
     }
 
@@ -65,9 +67,11 @@ public class SpriteToolApp : ToolApp
             _redoStates.Push(new UndoState
             {
                 title = undoState.title,
-                state = (DocumentState)activeDocument.Clone()
+                state = activeDocument.Clone()
             });
             activeDocument = undoState.state;
+            activeAnimation = null;
+            activeKeyframe = null;
         }
     }
 
@@ -79,9 +83,11 @@ public class SpriteToolApp : ToolApp
             _undoStates.Push(new UndoState
             {
                 title = redoState.title,
-                state = (DocumentState)activeDocument.Clone()
+                state = activeDocument.Clone()
             });
             activeDocument = redoState.state;
+            activeAnimation = null;
+            activeKeyframe = null;
         }
     }
 
@@ -96,6 +102,9 @@ public class SpriteToolApp : ToolApp
         GetWindow<AnimationListWindow>();
         GetWindow<KeyframeListWindow>();
         GetWindow<HitboxListWindow>();
+        GetWindow<SocketListWindow>();
+        GetWindow<TagListWindow>();
+        GetWindow<KeyframeDetailsWindow>();
     }
 
     protected override void UnloadContent()
@@ -174,6 +183,18 @@ public class SpriteToolApp : ToolApp
             if (ImGui.MenuItem("Hitbox List"))
             {
                 GetWindow<HitboxListWindow>();
+            }
+            if (ImGui.MenuItem("Socket List"))
+            {
+                GetWindow<SocketListWindow>();
+            }
+            if (ImGui.MenuItem("Tag List"))
+            {
+                GetWindow<TagListWindow>();
+            }
+            if (ImGui.MenuItem("Keyframe Details"))
+            {
+                GetWindow<KeyframeDetailsWindow>();
             }
             ImGui.EndMenu();
         }
