@@ -10,9 +10,14 @@ public class EditorWindow
     {
     }
 
+    public virtual ImGuiWindowFlags GetWindowFlags()
+    {
+        return ImGuiWindowFlags.None;
+    }
+
     public virtual void OnDrawWindow(ref bool open)
     {
-        if (ImGui.Begin(name, ref open))
+        if (ImGui.Begin(name, ref open, GetWindowFlags()))
         {
             OnGUI();
             ImGui.End();

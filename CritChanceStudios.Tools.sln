@@ -5,35 +5,54 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deps", "deps", "{7669345C-8C38-4951-A267-C176E1CA05EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FNA.Core", "deps\FNA\FNA.Core.csproj", "{A7DE409B-1951-41BA-B793-1B169E519A34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FNA.Core", "deps\FNA\FNA.Core.csproj", "{A7DE409B-1951-41BA-B793-1B169E519A34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolApp", "ToolApp\ToolApp.csproj", "{F6477FCB-9ABE-4E64-95FB-6AF13F7467A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ToolApp", "ToolApp\ToolApp.csproj", "{F6477FCB-9ABE-4E64-95FB-6AF13F7467A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolDemo", "ToolDemo\ToolDemo.csproj", "{99041381-13A2-4162-8CF1-7D9C7FF054CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ToolDemo", "ToolDemo\ToolDemo.csproj", "{99041381-13A2-4162-8CF1-7D9C7FF054CF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpriteTool", "SpriteTool\SpriteTool.csproj", "{617C2A4A-F76B-4146-BEF6-073856FC1B7F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NativeFileDialogSharp", "NativeFileDialogSharp", "{EA26F8C3-F7D8-431F-B856-4C8541A3C912}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NativeFileDialogSharp", "deps\NativeFileDialogSharp\NativeFileDialogSharp\NativeFileDialogSharp.csproj", "{552EB2D7-27F6-4D9F-84EE-74A72AC9867A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A7DE409B-1951-41BA-B793-1B169E519A34}.Debug|x64.ActiveCfg = Debug|x64
+		{A7DE409B-1951-41BA-B793-1B169E519A34}.Debug|x64.Build.0 = Debug|x64
+		{A7DE409B-1951-41BA-B793-1B169E519A34}.Release|x64.ActiveCfg = Release|x64
+		{A7DE409B-1951-41BA-B793-1B169E519A34}.Release|x64.Build.0 = Release|x64
+		{F6477FCB-9ABE-4E64-95FB-6AF13F7467A2}.Debug|x64.ActiveCfg = Debug|x64
+		{F6477FCB-9ABE-4E64-95FB-6AF13F7467A2}.Debug|x64.Build.0 = Debug|x64
+		{F6477FCB-9ABE-4E64-95FB-6AF13F7467A2}.Release|x64.ActiveCfg = Release|x64
+		{F6477FCB-9ABE-4E64-95FB-6AF13F7467A2}.Release|x64.Build.0 = Release|x64
+		{99041381-13A2-4162-8CF1-7D9C7FF054CF}.Debug|x64.ActiveCfg = Debug|x64
+		{99041381-13A2-4162-8CF1-7D9C7FF054CF}.Debug|x64.Build.0 = Debug|x64
+		{99041381-13A2-4162-8CF1-7D9C7FF054CF}.Release|x64.ActiveCfg = Release|x64
+		{99041381-13A2-4162-8CF1-7D9C7FF054CF}.Release|x64.Build.0 = Release|x64
+		{617C2A4A-F76B-4146-BEF6-073856FC1B7F}.Debug|x64.ActiveCfg = Debug|x64
+		{617C2A4A-F76B-4146-BEF6-073856FC1B7F}.Debug|x64.Build.0 = Debug|x64
+		{617C2A4A-F76B-4146-BEF6-073856FC1B7F}.Release|x64.ActiveCfg = Release|x64
+		{617C2A4A-F76B-4146-BEF6-073856FC1B7F}.Release|x64.Build.0 = Release|x64
+		{552EB2D7-27F6-4D9F-84EE-74A72AC9867A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{552EB2D7-27F6-4D9F-84EE-74A72AC9867A}.Debug|x64.Build.0 = Debug|Any CPU
+		{552EB2D7-27F6-4D9F-84EE-74A72AC9867A}.Release|x64.ActiveCfg = Release|Any CPU
+		{552EB2D7-27F6-4D9F-84EE-74A72AC9867A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A7DE409B-1951-41BA-B793-1B169E519A34}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{A7DE409B-1951-41BA-B793-1B169E519A34}.Debug|Any CPU.Build.0 = Debug|x64
-		{A7DE409B-1951-41BA-B793-1B169E519A34}.Release|Any CPU.ActiveCfg = Release|x64
-		{A7DE409B-1951-41BA-B793-1B169E519A34}.Release|Any CPU.Build.0 = Release|x64
-		{F6477FCB-9ABE-4E64-95FB-6AF13F7467A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F6477FCB-9ABE-4E64-95FB-6AF13F7467A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F6477FCB-9ABE-4E64-95FB-6AF13F7467A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F6477FCB-9ABE-4E64-95FB-6AF13F7467A2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{99041381-13A2-4162-8CF1-7D9C7FF054CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{99041381-13A2-4162-8CF1-7D9C7FF054CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{99041381-13A2-4162-8CF1-7D9C7FF054CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{99041381-13A2-4162-8CF1-7D9C7FF054CF}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A7DE409B-1951-41BA-B793-1B169E519A34} = {7669345C-8C38-4951-A267-C176E1CA05EA}
+		{EA26F8C3-F7D8-431F-B856-4C8541A3C912} = {7669345C-8C38-4951-A267-C176E1CA05EA}
+		{552EB2D7-27F6-4D9F-84EE-74A72AC9867A} = {EA26F8C3-F7D8-431F-B856-4C8541A3C912}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C5844902-8350-4699-92A5-764C7423B4AA}
 	EndGlobalSection
 EndGlobal
