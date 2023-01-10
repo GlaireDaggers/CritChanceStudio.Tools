@@ -15,6 +15,8 @@ public class ViewportWindow2D : RenderWindow
 
     public readonly SpriteBatch spriteBatch = new SpriteBatch(ToolApp.instance.GraphicsDevice);
 
+    private bool _dragging = false;
+
     public ViewportWindow2D() : base()
     {
     }
@@ -23,6 +25,33 @@ public class ViewportWindow2D : RenderWindow
     {
         base.OnClosed();
         spriteBatch.Dispose();
+    }
+
+    public override void OnGUI()
+    {
+        base.OnGUI();
+
+        if (ImGui.Button("-"))
+        {
+            cameraZoom /= 2;
+            cameraZoom = (int)cameraZoom;
+            if (cameraZoom < 1f)
+            {
+                cameraZoom = 1f;
+            }
+        }
+        ImGui.SameLine();
+        ImGui.Text($"Zoom: {(int)(cameraZoom * 100)}%%");
+        ImGui.SameLine();
+        if (ImGui.Button("+"))
+        {
+            cameraZoom *= 2;
+            cameraZoom = (int)cameraZoom;
+            if (cameraZoom > 16f)
+            {
+                cameraZoom = 16f;
+            }
+        }
     }
 
     protected override void Render(RenderTarget2D target)
@@ -38,12 +67,19 @@ public class ViewportWindow2D : RenderWindow
         Num.Vector2 contentSize = contentMax - contentMin;
 
         ImGui.InvisibleButton(name + "__drag", contentSize, ImGuiButtonFlags.MouseButtonRight);
-        if (ImGui.IsMouseDragging(ImGuiMouseButton.Right))
+        ImGui.SetItemAllowOverlap();
+        if (ImGui.IsItemActivated())
         {
-            cameraPos -= ImGui.GetIO().MouseDelta;
+            _dragging = true;
         }
 
-        ImGui.SetCursorPos(Num.Vector2.Zero);
+        if (_dragging)
+        {
+            cameraPos -= ImGui.GetIO().MouseDelta;
+            _dragging = ImGui.IsMouseDown(ImGuiMouseButton.Right);
+        }
+
+        ImGui.SetCursorScreenPos(contentMin);
 
         int cellSize = (int)cameraZoom * 32;
 
