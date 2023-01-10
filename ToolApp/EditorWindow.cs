@@ -2,6 +2,8 @@ namespace CritChanceStudio.Tools;
 
 using ImGuiNET;
 
+using Microsoft.Xna.Framework;
+
 public class EditorWindow
 {
     public string name = "Editor Window";
@@ -13,6 +15,10 @@ public class EditorWindow
     public virtual ImGuiWindowFlags GetWindowFlags()
     {
         return ImGuiWindowFlags.None;
+    }
+
+    public virtual void Update(GameTime gameTime)
+    {
     }
 
     public virtual void OnDrawWindow(ref bool open)

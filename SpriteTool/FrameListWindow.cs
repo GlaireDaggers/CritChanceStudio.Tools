@@ -23,24 +23,27 @@ public class FrameListWindow : EditorWindow
 
         if (ImGui.Button("Import Frame"))
         {
-            var result = Dialog.FileOpen("png");
+            var result = Dialog.FileOpenMultiple("png");
             if (result.IsOk)
             {
-                Console.WriteLine("Opened file: " + result.Path);
-                try
+                foreach (var infile in result.Paths)
                 {
-                    Texture2D texture = tool.textureManager.GetTexture(result.Path);
-
-                    tool.RegisterUndo("Import Frame");
-                    tool.activeDocument.frames.Add(new SpriteFrame
+                    Console.WriteLine("Opened file: " + infile);
+                    try
                     {
-                        srcTexture = result.Path,
-                        srcRect = new Rectangle(0, 0, texture.Width, texture.Height),
-                    });
-                }
-                catch(Exception e)
-                {
-                    Console.WriteLine(e.Message);
+                        Texture2D texture = tool.textureManager.GetTexture(infile);
+
+                        tool.RegisterUndo("Import Frames");
+                        tool.activeDocument.frames.Add(new SpriteFrame
+                        {
+                            srcTexture = infile,
+                            srcRect = new Rectangle(0, 0, texture.Width, texture.Height),
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
                 }
             }
         }
@@ -54,9 +57,24 @@ public class FrameListWindow : EditorWindow
                 Num.Vector2 uvMin = new Num.Vector2(frame.srcRect.Left / (float)tex.Width, frame.srcRect.Top / (float)tex.Height);
                 Num.Vector2 uvMax = new Num.Vector2(frame.srcRect.Right / (float)tex.Width, frame.srcRect.Bottom / (float)tex.Height);
 
-                ImGui.ImageButton("_frame_" + i, tool.textureManager.GetImGuiHandle(frame.srcTexture), new Num.Vector2(frame.srcRect.Width, frame.srcRect.Height));
+                ImGui.ImageButton("_frame_" + i, tool.textureManager.GetImGuiHandle(frame.srcTexture), new Num.Vector2(frame.srcRect.Width, frame.srcRect.Height),
+                    uvMin, uvMax);
+
+                if (ImGui.BeginDragDropSource())
+                {
+                    // begin drag-drop operation with this SpriteFrame
+                    ToolApp.instance.SetDragDropPayload(frame);
+                    ImGui.Image(tool.textureManager.GetImGuiHandle(frame.srcTexture), new Num.Vector2(frame.srcRect.Width, frame.srcRect.Height));
+                    ImGui.EndDragDropSource();
+                }
+
                 ImGui.SameLine();
-                ImGui.Button("Delete");
+                
+                if (ImGui.Button("Delete"))
+                {
+                    tool.RegisterUndo("Delete frame");
+                    tool.activeDocument.frames.RemoveAt(i--);
+                }
             }
 
             ImGui.EndChild();
