@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\deps\FNA\FNA.Core.csproj" />
+    <ProjectReference Include="..\ToolApp\ToolApp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ImGUI.NET" Version="1.89.2" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <IsWindows Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">true</IsWindows>
+    <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>
+    <Platforms>x64</Platforms>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="content/**/*.*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Condition="'$(IsWindows)'=='true'" Name="CopyDLL_Win64" AfterTargets="AfterBuild">
+    <Copy SourceFiles="lib/win64/FNA3D.dll" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="lib/win64/FAudio.dll" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="lib/win64/SDL2.dll" DestinationFolder="$(OutDir)" />
+  </Target>
+
+  <Target Condition="'$(IsLinux)'=='true'" Name="CopyDLL_Linux64" AfterTargets="AfterBuild">
+    <Copy SourceFiles="lib/linux64/libFNA3D.so.0" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="lib/linux64/libFAudio.so.0" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="lib/linux64/libSDL2-2.0.so.0" DestinationFolder="$(OutDir)" />
+  </Target>
+
+</Project>
