@@ -354,6 +354,7 @@ public class SpriteToolApp : ToolApp
             {
                 var srcAnim = activeDocument.animations[i];
                 exportDoc.animations[i].name = srcAnim.name;
+                exportDoc.animations[i].looping = srcAnim.looping;
                 exportDoc.animations[i].keyframes = new ExportKeyframe[srcAnim.keyframes.Count];
 
                 for (int j = 0; j < srcAnim.keyframes.Count; j++)

@@ -24,8 +24,12 @@ public class KeyframeListWindow : EditorWindow
         }
         else
         {
-            bool looping = true;
-            ImGui.Checkbox("Looping", ref looping);
+            bool looping = tool.activeAnimation.looping;
+            if (ImGui.Checkbox("Looping", ref looping))
+            {
+                tool.RegisterUndo("Modify animation");
+                tool.activeAnimation.looping = looping;
+            }
 
             // keyframe list
             if (ImGui.BeginChild("_keyframe_timeline", new Num.Vector2(ImGui.GetContentRegionAvail().X, 64), true, ImGuiWindowFlags.AlwaysHorizontalScrollbar))
