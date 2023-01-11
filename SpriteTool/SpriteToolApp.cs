@@ -3,15 +3,19 @@ namespace CritChanceStudio.Tools;
 using ImGuiNET;
 
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 using NativeFileDialogSharp;
 
 using Newtonsoft.Json;
 
+using RectpackSharp;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks.Sources;
 
 public class SpriteToolApp : ToolApp
 {
@@ -216,6 +220,10 @@ public class SpriteToolApp : ToolApp
             {
                 SaveAs();
             }
+            if (ImGui.MenuItem("Export"))
+            {
+                Export();
+            }
             if (ImGui.MenuItem("Quit"))
             {
                 Exit();
@@ -291,6 +299,85 @@ public class SpriteToolApp : ToolApp
                 GetWindow<KeyframeDetailsWindow>();
             }
             ImGui.EndMenu();
+        }
+    }
+
+    private void Export()
+    {
+        var result = Dialog.FileSave("json");
+        if (result.IsOk)
+        {
+            // pack all frames into a texture sheet
+            PackingRectangle[] rects = new PackingRectangle[activeDocument.frames.Count];
+            Rectangle[] actualRects = new Rectangle[rects.Length];
+            Dictionary<SpriteFrame, int> idMap = new Dictionary<SpriteFrame, int>();
+
+            for (int i = 0; i < rects.Length; i++)
+            {
+                rects[i] = new PackingRectangle((uint)activeDocument.frames[i].srcRect.X,
+                    (uint)activeDocument.frames[i].srcRect.Y,
+                    (uint)activeDocument.frames[i].srcRect.Width,
+                    (uint)activeDocument.frames[i].srcRect.Height, i);
+            }
+
+            RectanglePacker.Pack(rects, out PackingRectangle atlasBounds, PackingHints.FindBest);
+
+            // create texture atlas
+            Texture2D atlas = new Texture2D(GraphicsDevice, (int)atlasBounds.Width, (int)atlasBounds.Height, false, SurfaceFormat.Color);
+
+            // copy each frame into atlas, map SpriteFrame -> rectangle in atlas
+            for (int i = 0; i < rects.Length; i++)
+            {
+                Rectangle actualRect = new Rectangle((int)rects[i].X, (int)rects[i].Y, (int)rects[i].Width, (int)rects[i].Height);
+                actualRects[i] = actualRect;
+                idMap.Add(activeDocument.frames[rects[i].Id], i);
+
+                Texture2D srcTex = textureManager.GetTexture(activeDocument.frames[rects[i].Id].srcTexture);
+                Color[] srcData = new Color[rects[i].Width * rects[i].Height];
+                srcTex.GetData(0, activeDocument.frames[rects[i].Id].srcRect, srcData, 0, srcData.Length);
+                atlas.SetData(0, actualRect, srcData, 0, srcData.Length);
+            }
+
+            string atlasPath = Path.ChangeExtension(result.Path, ".png");
+            using (var stream = File.OpenWrite(atlasPath))
+                atlas.SaveAsPng(stream, atlas.Width, atlas.Height);
+
+            atlas.Dispose();
+
+            // convert to ExportDocument
+            ExportDocument exportDoc = new ExportDocument();
+            exportDoc.atlasPath = Path.GetFileName(atlasPath);
+            exportDoc.frames = actualRects;
+            exportDoc.animations = new ExportAnimation[activeDocument.animations.Count];
+
+            for (int i = 0; i < exportDoc.animations.Length; i++)
+            {
+                var srcAnim = activeDocument.animations[i];
+                exportDoc.animations[i].name = srcAnim.name;
+                exportDoc.animations[i].keyframes = new ExportKeyframe[srcAnim.keyframes.Count];
+
+                for (int j = 0; j < srcAnim.keyframes.Count; j++)
+                {
+                    exportDoc.animations[i].keyframes[j] = new ExportKeyframe
+                    {
+                        frame = idMap[srcAnim.keyframes[j].frame],
+                        duration = srcAnim.keyframes[j].duration,
+                        offset = srcAnim.keyframes[j].offset,
+                        motionDelta = srcAnim.keyframes[j].motionDelta,
+                        hitboxes = srcAnim.keyframes[j].hitboxes.ToArray(),
+                        sockets = srcAnim.keyframes[j].sockets.ToArray(),
+                        tags = srcAnim.keyframes[j].tags.ToArray(),
+                    };
+                }
+            }
+
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            settings.Formatting = Formatting.Indented;
+            settings.Converters.Add(new RectangleJsonConverter());
+            settings.Converters.Add(new Vector2JsonConverter());
+
+            string exportJson = JsonConvert.SerializeObject(exportDoc, settings);
+            File.WriteAllText(result.Path, exportJson);
         }
     }
 
