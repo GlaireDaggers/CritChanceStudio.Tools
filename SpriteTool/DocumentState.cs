@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
 public interface ICloneable<T>
@@ -11,10 +12,26 @@ public interface ICloneable<T>
     T Clone();
 }
 
-public struct SpriteFrame
+public struct SpriteFrame : IEquatable<SpriteFrame>
 {
     public string srcTexture;
     public Rectangle srcRect;
+
+    public bool Equals(SpriteFrame other)
+    {
+        return srcTexture == other.srcTexture && srcRect == other.srcRect;
+    }
+
+    public override bool Equals([NotNullWhen(true)] object obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        return obj is SpriteFrame && Equals((SpriteFrame)obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(srcTexture, srcRect);
+    }
 }
 
 public struct Hitbox
