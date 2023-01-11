@@ -51,12 +51,21 @@ public class AnimationListWindow : EditorWindow
                 }
 
                 ImGui.SameLine();
-                if (ImGui.Button("Edit"))
+                if (ImGui.Button("Edit##anim_" + i))
                 {
                     tool.activeAnimation = anim;
                 }
                 ImGui.SameLine();
-                ImGui.Button("Delete");
+                if (ImGui.Button("Delete##anim_" + i))
+                {
+                    tool.RegisterUndo("Delete animation");
+                    if (anim == tool.activeAnimation)
+                    {
+                        tool.activeAnimation = null;
+                        tool.activeKeyframe = null;
+                    }
+                    tool.activeDocument.animations.RemoveAt(i--);
+                }
             }
 
             ImGui.EndChild();

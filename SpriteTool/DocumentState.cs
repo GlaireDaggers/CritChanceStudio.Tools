@@ -3,6 +3,8 @@
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 
 public interface ICloneable<T>
 {
@@ -77,6 +79,62 @@ public class DocumentState : ICloneable<DocumentState>
         clone.frames = Clone(frames);
         clone.animations = DeepClone(animations);
         return clone;
+    }
+
+    public void NormalizePaths()
+    {
+        for (int i = 0; i < frames.Count; i++)
+        {
+            var frame = frames[i];
+            frame.srcTexture = frame.srcTexture.Replace('\\', '/');
+            frames[i] = frame;
+        }
+
+        foreach (var anim in animations)
+        {
+            foreach (var keyframe in anim.keyframes)
+            {
+                keyframe.frame.srcTexture = keyframe.frame.srcTexture.Replace('\\', '/');
+            }
+        }
+    }
+
+    public void MakePathsRelative(string rootDirectory)
+    {
+        for (int i = 0; i < frames.Count; i++)
+        {
+            var frame = frames[i];
+            frame.srcTexture = Path.GetRelativePath(rootDirectory, frame.srcTexture);
+            frames[i] = frame;
+        }
+
+        foreach (var anim in animations)
+        {
+            foreach (var keyframe in anim.keyframes)
+            {
+                keyframe.frame.srcTexture = Path.GetRelativePath(rootDirectory, keyframe.frame.srcTexture);
+            }
+        }
+    }
+
+    public void MakePathsAbsolute(string rootDirectory)
+    {
+        rootDirectory = Path.GetFullPath(rootDirectory);
+
+        for (int i = 0; i < frames.Count; i++)
+        {
+            var frame = frames[i];
+            frame.srcTexture = Path.Combine(rootDirectory, frame.srcTexture);
+            frames[i] = frame;
+        }
+
+        foreach (var anim in animations)
+        {
+            foreach (var keyframe in anim.keyframes)
+            {
+                keyframe.frame.srcTexture = Path.Combine(rootDirectory, keyframe.frame.srcTexture);
+            }
+        }
     }
 
     public static List<T> Clone<T>(List<T> src)
