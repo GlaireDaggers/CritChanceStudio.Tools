@@ -48,7 +48,7 @@ public class SocketListWindow : EditorWindow
                     }
 
                     ImGui.SameLine();
-                    if (ImGui.Button("Delete"))
+                    if (ImGui.Button("Delete##socket_" + i))
                     {
                         tool.RegisterUndo("Delete Socket");
                         tool.activeKeyframe.sockets.RemoveAt(i--);

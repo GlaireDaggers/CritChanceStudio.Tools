@@ -73,11 +73,39 @@ public class KeyframeDetailsWindow : EditorWindow
                     tool.activeKeyframe.offset = new Microsoft.Xna.Framework.Vector2((int)offset.X, (int)offset.Y);
                 }
 
+                if (ImGui.Button("Copy##offset"))
+                {
+                    tool.clipboard = offset;
+                }
+                ImGui.SameLine();
+                if (ImGui.Button("Paste##offset"))
+                {
+                    if (tool.clipboard is Num.Vector2 newOffset)
+                    {
+                        tool.RegisterUndo("Modify keyframe");
+                        tool.activeKeyframe.offset = new Microsoft.Xna.Framework.Vector2((int)newOffset.X, (int)newOffset.Y);
+                    }
+                }
+
                 Num.Vector2 motionDelta = new Num.Vector2(tool.activeKeyframe.motionDelta.X, tool.activeKeyframe.motionDelta.Y);
                 if (ImGui.InputFloat2("Motion Delta (px)", ref motionDelta, null, ImGuiInputTextFlags.EnterReturnsTrue))
                 {
                     tool.RegisterUndo("Modify keyframe");
                     tool.activeKeyframe.motionDelta = new Microsoft.Xna.Framework.Vector2(motionDelta.X, motionDelta.Y);
+                }
+
+                if (ImGui.Button("Copy##motiondelta"))
+                {
+                    tool.clipboard = motionDelta;
+                }
+                ImGui.SameLine();
+                if (ImGui.Button("Paste##motiondelta"))
+                {
+                    if (tool.clipboard is Num.Vector2 newMotionDelta)
+                    {
+                        tool.RegisterUndo("Modify keyframe");
+                        tool.activeKeyframe.motionDelta = new Microsoft.Xna.Framework.Vector2((int)newMotionDelta.X, (int)newMotionDelta.Y);
+                    }
                 }
             }
         }

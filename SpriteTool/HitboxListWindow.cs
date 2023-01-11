@@ -48,13 +48,29 @@ public class HitboxListWindow : EditorWindow
                     }
 
                     ImGui.SameLine();
-                    if (ImGui.Button("Delete"))
+                    if (ImGui.Button("Delete##hitbox_" + i))
                     {
                         tool.RegisterUndo("Delete Hitbox");
                         tool.activeKeyframe.hitboxes.RemoveAt(i--);
                     }
                     else
                     {
+                        ImGui.SameLine();
+                        if (ImGui.Button("Copy##hitbox_" + i))
+                        {
+                            tool.clipboard = hitbox;
+                        }
+                        ImGui.SameLine();
+                        if (ImGui.Button("Paste##hitbox_" + i))
+                        {
+                            if (tool.clipboard is Hitbox paste)
+                            {
+                                tool.RegisterUndo("Modify hitbox");
+                                hitbox = paste;
+                                tool.activeKeyframe.hitboxes[i] = hitbox;
+                            }
+                        }
+
                         Num.Vector2 rectXY = new Num.Vector2(hitbox.rect.X, hitbox.rect.Y);
                         Num.Vector2 rectWH = new Num.Vector2(hitbox.rect.Width, hitbox.rect.Height);
 

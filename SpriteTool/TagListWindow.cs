@@ -41,7 +41,7 @@ public class TagListWindow : EditorWindow
                     }
 
                     ImGui.SameLine();
-                    if (ImGui.Button("Delete"))
+                    if (ImGui.Button("Delete##tag_" + i))
                     {
                         tool.RegisterUndo("Delete Tag");
                         tool.activeKeyframe.tags.RemoveAt(i--);
