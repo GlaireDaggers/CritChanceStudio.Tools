@@ -74,12 +74,14 @@ public class Keyframe : ICloneable<Keyframe>
 public class Animation : ICloneable<Animation>
 {
     public string name;
+    public bool looping;
     public List<Keyframe> keyframes = new List<Keyframe>();
 
     public Animation Clone()
     {
         Animation clone = new Animation();
         clone.name = name;
+        clone.looping = looping;
         clone.keyframes = DocumentState.DeepClone(keyframes);
         return clone;
     }

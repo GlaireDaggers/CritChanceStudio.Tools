@@ -16,6 +16,7 @@ public struct ExportKeyframe
 public struct ExportAnimation
 {
     public string name;
+    public bool looping;
     public ExportKeyframe[] keyframes;
 }
 
