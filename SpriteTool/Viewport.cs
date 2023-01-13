@@ -127,6 +127,12 @@ public class SpriteToolViewport : ViewportWindow2D
 
         var tool = (SpriteToolApp)ToolApp.instance;
         if (tool.activeAnimation == null || tool.activeAnimation.keyframes.Count == 0) return;
+
+        if (_frame >= tool.activeAnimation.keyframes.Count)
+        {
+            _frame = 0;
+        }
+
         Keyframe keyframe = tool.activeAnimation.keyframes[_frame];
 
         if (_isPlaying)
