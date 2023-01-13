@@ -1,0 +1,178 @@
+{
+  "emitters": [
+    {
+      "texture": "fire.png",
+      "rows": 1,
+      "columns": 1,
+      "cycles": 1,
+      "startColor": {
+        "R": 255,
+        "G": 255,
+        "B": 255,
+        "A": 255
+      },
+      "endColor": {
+        "R": 255,
+        "G": 0,
+        "B": 0,
+        "A": 0
+      },
+      "startScale": 0.75,
+      "endScale": 1.5,
+      "blendMode": "Additive",
+      "emitter": {
+        "name": "flames",
+        "startDelay": 0.0,
+        "maxParticles": 1024,
+        "emitParticleCountPerBurst": 1,
+        "emitParticleMaxBurstCount": 0,
+        "emitParticleBurstInterval": 0.1,
+        "minLifetime": 1.0,
+        "maxLifetime": 1.0,
+        "minPosition": {
+          "X": -32.0,
+          "Y": -32.0
+        },
+        "maxPosition": {
+          "X": 32.0,
+          "Y": 32.0
+        },
+        "minRotation": 0.0,
+        "maxRotation": 360.0,
+        "minScale": {
+          "X": 1.0,
+          "Y": 1.0
+        },
+        "maxScale": {
+          "X": 1.0,
+          "Y": 1.0
+        },
+        "scaleRangeType": "NonUniform",
+        "minVelocity": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "maxVelocity": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "velocityRangeType": "NonUniform",
+        "minAngularVelocity": -90.0,
+        "maxAngularVelocity": 90.0,
+        "minLinearForce": {
+          "X": 0.0,
+          "Y": -300.0
+        },
+        "maxLinearForce": {
+          "X": 0.0,
+          "Y": -400.0
+        },
+        "linearForceRangeType": "NonUniform",
+        "minAngularForce": 0.0,
+        "maxAngularForce": 0.0,
+        "minColor": {
+          "R": 255,
+          "G": 255,
+          "B": 255,
+          "A": 255
+        },
+        "maxColor": {
+          "R": 255,
+          "G": 255,
+          "B": 255,
+          "A": 255
+        },
+        "colorRangeType": "NonUniform",
+        "drag": 0.0,
+        "angularDrag": 0.0
+      }
+    },
+    {
+      "texture": "fire.png",
+      "rows": 1,
+      "columns": 1,
+      "cycles": 1,
+      "startColor": {
+        "R": 255,
+        "G": 255,
+        "B": 255,
+        "A": 255
+      },
+      "endColor": {
+        "R": 255,
+        "G": 0,
+        "B": 0,
+        "A": 255
+      },
+      "startScale": 0.05,
+      "endScale": 0.0,
+      "blendMode": "Additive",
+      "emitter": {
+        "name": "sparks",
+        "startDelay": 0.0,
+        "maxParticles": 1024,
+        "emitParticleCountPerBurst": 1,
+        "emitParticleMaxBurstCount": 0,
+        "emitParticleBurstInterval": 0.1,
+        "minLifetime": 1.0,
+        "maxLifetime": 1.0,
+        "minPosition": {
+          "X": -32.0,
+          "Y": -32.0
+        },
+        "maxPosition": {
+          "X": 32.0,
+          "Y": 32.0
+        },
+        "minRotation": 0.0,
+        "maxRotation": 0.0,
+        "minScale": {
+          "X": 1.0,
+          "Y": 1.0
+        },
+        "maxScale": {
+          "X": 1.0,
+          "Y": 1.0
+        },
+        "scaleRangeType": "NonUniform",
+        "minVelocity": {
+          "X": -200.0,
+          "Y": -200.0
+        },
+        "maxVelocity": {
+          "X": 200.0,
+          "Y": -300.0
+        },
+        "velocityRangeType": "NonUniform",
+        "minAngularVelocity": 0.0,
+        "maxAngularVelocity": 0.0,
+        "minLinearForce": {
+          "X": -400.0,
+          "Y": -400.0
+        },
+        "maxLinearForce": {
+          "X": 400.0,
+          "Y": 400.0
+        },
+        "linearForceRangeType": "NonUniform",
+        "minAngularForce": 0.0,
+        "maxAngularForce": 0.0,
+        "minColor": {
+          "R": 255,
+          "G": 255,
+          "B": 255,
+          "A": 255
+        },
+        "maxColor": {
+          "R": 255,
+          "G": 255,
+          "B": 255,
+          "A": 255
+        },
+        "colorRangeType": "NonUniform",
+        "drag": 2.0,
+        "angularDrag": 0.0
+      }
+    }
+  ]
+}
