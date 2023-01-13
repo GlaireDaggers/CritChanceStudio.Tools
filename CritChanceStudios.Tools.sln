@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NativeFileDialogSharp", "Na
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NativeFileDialogSharp", "deps\NativeFileDialogSharp\NativeFileDialogSharp\NativeFileDialogSharp.csproj", "{552EB2D7-27F6-4D9F-84EE-74A72AC9867A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParticleTool", "ParticleTool\ParticleTool.csproj", "{725EB64D-0A52-44A8-91EE-6B588AD7D5A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -43,6 +45,10 @@ Global
 		{552EB2D7-27F6-4D9F-84EE-74A72AC9867A}.Debug|x64.Build.0 = Debug|Any CPU
 		{552EB2D7-27F6-4D9F-84EE-74A72AC9867A}.Release|x64.ActiveCfg = Release|Any CPU
 		{552EB2D7-27F6-4D9F-84EE-74A72AC9867A}.Release|x64.Build.0 = Release|Any CPU
+		{725EB64D-0A52-44A8-91EE-6B588AD7D5A7}.Debug|x64.ActiveCfg = Debug|x64
+		{725EB64D-0A52-44A8-91EE-6B588AD7D5A7}.Debug|x64.Build.0 = Debug|x64
+		{725EB64D-0A52-44A8-91EE-6B588AD7D5A7}.Release|x64.ActiveCfg = Release|x64
+		{725EB64D-0A52-44A8-91EE-6B588AD7D5A7}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
