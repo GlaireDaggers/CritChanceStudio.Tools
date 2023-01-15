@@ -15,7 +15,6 @@ using RectpackSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks.Sources;
 
 public class SpriteToolApp : ToolApp
 {
@@ -160,19 +159,12 @@ public class SpriteToolApp : ToolApp
 
         if (IsKeyDown(Keys.LeftControl) && IsKeyPressed(Keys.N))
         {
-            activeDocument = new DocumentState();
-            activeAnimation = null;
-            activeKeyframe = null;
-            _undoStates.Clear();
-            _redoStates.Clear();
-            activeDocumentPath = null;
-            unsavedChanges = false;
-            UpdateTitle();
+            ConfirmChanges("Document has unsaved changes. Are you sure you want to create a new document?", New);
         }
 
         if (IsKeyDown(Keys.LeftControl) && IsKeyPressed(Keys.O))
         {
-            Open();
+            ConfirmChanges("Document has unsaved changes. Are you sure you want to open a different file?", Open);
         }
 
         if (IsKeyDown(Keys.LeftControl) && IsKeyPressed(Keys.S))
@@ -199,18 +191,11 @@ public class SpriteToolApp : ToolApp
         {
             if (ImGui.MenuItem("New", "CTRL+N"))
             {
-                activeDocument = new DocumentState();
-                activeAnimation = null;
-                activeKeyframe = null;
-                _undoStates.Clear();
-                _redoStates.Clear();
-                activeDocumentPath = null;
-                unsavedChanges = false;
-                UpdateTitle();
+                ConfirmChanges("Document has unsaved changes. Are you sure you want to create a new document?", New);
             }
             if (ImGui.MenuItem("Open", "CTRL+O"))
             {
-                Open();
+                ConfirmChanges("Document has unsaved changes. Are you sure you want to open a different file?", Open);
             }
             if (ImGui.MenuItem("Save", "CTRL+S"))
             {
@@ -226,7 +211,7 @@ public class SpriteToolApp : ToolApp
             }
             if (ImGui.MenuItem("Quit"))
             {
-                Exit();
+                ConfirmChanges("Document has unsaved changes. Are you sure you want to quit?", Exit);
             }
             ImGui.EndMenu();
         }
@@ -382,42 +367,71 @@ public class SpriteToolApp : ToolApp
         }
     }
 
+    private void ConfirmChanges(string message, Action action)
+    {
+        if (unsavedChanges)
+        {
+            ShowDialog("Unsaved changes", message, new string[] { "Ok", "Cancel" }, (result) =>
+            {
+                if (result == 0)
+                {
+                    action?.Invoke();
+                }
+            });
+        }
+        else
+        {
+            action?.Invoke();
+        }
+    }
+
+    private void New()
+    {
+        activeDocument = new DocumentState();
+        activeAnimation = null;
+        activeKeyframe = null;
+        _undoStates.Clear();
+        _redoStates.Clear();
+        activeDocumentPath = null;
+        unsavedChanges = false;
+        UpdateTitle();
+    }
+
     private void Open()
     {
-        var result = Dialog.FileOpen("json");
-        if (result.IsOk)
+        FileOpen("json", onOpen: (path) =>
         {
             try
             {
-                string filedata = File.ReadAllText(result.Path);
+                string filedata = File.ReadAllText(path);
                 JsonSerializerSettings settings = new JsonSerializerSettings();
                 settings.Converters.Add(new RectangleJsonConverter());
                 settings.Converters.Add(new Vector2JsonConverter());
                 DocumentState newDoc = JsonConvert.DeserializeObject<DocumentState>(filedata, settings);
-                newDoc.MakePathsAbsolute(Path.GetDirectoryName(result.Path));
+                newDoc.MakePathsAbsolute(Path.GetDirectoryName(path));
                 activeDocument = newDoc;
                 activeAnimation = null;
                 activeKeyframe = null;
                 _undoStates.Clear();
                 _redoStates.Clear();
 
-                activeDocumentPath = result.Path;
+                activeDocumentPath = path;
                 UpdateTitle();
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
+                ShowDialog("Error", "Failed to open file: " + e.Message, new string[] { "Ok" });
             }
-        }
+        });
     }
 
     private void SaveAs()
     {
-        var result = Dialog.FileSave("json");
-        if (result.IsOk)
+        FileSave("json", onSave: (path) =>
         {
-            Save(result.Path);
-        }
+            Save(path);
+        });
     }
 
     private void Save()
@@ -451,6 +465,7 @@ public class SpriteToolApp : ToolApp
         catch (Exception e)
         {
             Console.WriteLine(e);
+            ShowDialog("Error", "Failed to save file: " + e.Message, new string[] { "Ok" });
         }
     }
 
