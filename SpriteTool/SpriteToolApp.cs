@@ -289,8 +289,7 @@ public class SpriteToolApp : ToolApp
 
     private void Export()
     {
-        var result = Dialog.FileSave("json");
-        if (result.IsOk)
+        FileSave("json", onSave: (path) =>
         {
             // pack all frames into a texture sheet
             PackingRectangle[] rects = new PackingRectangle[activeDocument.frames.Count];
@@ -323,7 +322,7 @@ public class SpriteToolApp : ToolApp
                 atlas.SetData(0, actualRect, srcData, 0, srcData.Length);
             }
 
-            string atlasPath = Path.ChangeExtension(result.Path, ".png");
+            string atlasPath = Path.ChangeExtension(path, ".png");
             using (var stream = File.OpenWrite(atlasPath))
                 atlas.SaveAsPng(stream, atlas.Width, atlas.Height);
 
@@ -363,8 +362,8 @@ public class SpriteToolApp : ToolApp
             settings.Converters.Add(new Vector2JsonConverter());
 
             string exportJson = JsonConvert.SerializeObject(exportDoc, settings);
-            File.WriteAllText(result.Path, exportJson);
-        }
+            File.WriteAllText(path, exportJson);
+        });
     }
 
     private void ConfirmChanges(string message, Action action)
