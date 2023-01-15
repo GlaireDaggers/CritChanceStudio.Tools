@@ -23,10 +23,9 @@ public class FrameListWindow : EditorWindow
 
         if (ImGui.Button("Import Frame"))
         {
-            var result = Dialog.FileOpenMultiple("png");
-            if (result.IsOk)
+            tool.FileOpenMultiple("png", onOpen: (paths) =>
             {
-                foreach (var infile in result.Paths)
+                foreach (var infile in paths)
                 {
                     Console.WriteLine("Opened file: " + infile);
                     try
@@ -43,9 +42,10 @@ public class FrameListWindow : EditorWindow
                     catch (Exception e)
                     {
                         Console.WriteLine(e.Message);
+                        tool.ShowDialog("Error", "Failed importing frames: " + e.Message, new string[] { "Ok" });
                     }
                 }
-            }
+            });
         }
 
         if (ImGui.BeginChild("_frame_list"))
