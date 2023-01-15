@@ -26,6 +26,12 @@
     <Content Include="content/**/*.*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="imgui.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <Target Condition="'$(IsWindows)'=='true'" Name="CopyDLL_Win64" AfterTargets="AfterBuild">
     <Copy SourceFiles="../lib/win64/FNA3D.dll" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="../lib/win64/FAudio.dll" DestinationFolder="$(OutDir)" />
@@ -33,11 +39,25 @@
     <Copy SourceFiles="../lib/win64/nfd.dll" DestinationFolder="$(OutDir)" />
   </Target>
 
+  <Target Condition="'$(IsWindows)'=='true'" Name="PublishDLL_Win64" AfterTargets="AfterPublish">
+    <Copy SourceFiles="../lib/win64/FNA3D.dll" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="../lib/win64/FAudio.dll" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="../lib/win64/SDL2.dll" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="../lib/win64/nfd.dll" DestinationFolder="$(PublishDir)" />
+  </Target>
+
   <Target Condition="'$(IsLinux)'=='true'" Name="CopyDLL_Linux64" AfterTargets="AfterBuild">
     <Copy SourceFiles="../lib/linux64/libFNA3D.so.0" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="../lib/linux64/libFAudio.so.0" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="../lib/linux64/libSDL2-2.0.so.0" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="../lib/win64/libnfd.so" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="../lib/linux64/libnfd.so" DestinationFolder="$(OutDir)" />
+  </Target>
+
+  <Target Condition="'$(IsLinux)'=='true'" Name="PublishDLL_Linux64" AfterTargets="AfterPublish">
+    <Copy SourceFiles="../lib/linux64/libFNA3D.so.0" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="../lib/linux64/libFAudio.so.0" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="../lib/linux64/libSDL2-2.0.so.0" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="../lib/linux64/libnfd.so" DestinationFolder="$(PublishDir)" />
   </Target>
 
 </Project>
