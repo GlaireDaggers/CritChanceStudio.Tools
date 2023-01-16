@@ -107,7 +107,9 @@ public class ToolApp : Game
     {
         base.Update(gameTime);
 
-        if (!_modalDisplayed)
+        bool hasFocus = (SDL.SDL_GetWindowFlags(Window.Handle) & (int)SDL.SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS) != 0;
+
+        if (!_modalDisplayed && hasFocus)
         {
             imguiRenderer.UpdateInput();
 
