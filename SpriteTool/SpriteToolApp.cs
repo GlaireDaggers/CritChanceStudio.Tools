@@ -12,6 +12,8 @@ using Newtonsoft.Json;
 
 using RectpackSharp;
 
+using SDL2;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
