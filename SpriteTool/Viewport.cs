@@ -51,7 +51,7 @@ public class SpriteToolViewport : ViewportWindow2D
 
             foreach (var socket in tool.activeAnimation.keyframes[_frame].sockets)
             {
-                Vector2 pos = socket.position;
+                Vector2 pos = socket.position + _posPreview;
                 DrawCircle(new Num.Vector2(pos.X, pos.Y), 2f, Color.White, socket.name);
             }
         }
