@@ -55,6 +55,22 @@ public class SocketListWindow : EditorWindow
                     }
                     else
                     {
+                        ImGui.SameLine();
+                        if (ImGui.Button("Copy##socket_" + i))
+                        {
+                            tool.clipboard = socket;
+                        }
+                        ImGui.SameLine();
+                        if (ImGui.Button("Paste##socket_" + i))
+                        {
+                            if (tool.clipboard is Socket paste)
+                            {
+                                tool.RegisterUndo("Modify socket");
+                                socket = paste;
+                                tool.activeKeyframe.sockets[i] = socket;
+                            }
+                        }
+
                         Num.Vector2 posXY = new Num.Vector2(socket.position.X, socket.position.Y);
                         
                         if (ImGui.InputFloat2("Position ##socket_" + i, ref posXY, null, ImGuiInputTextFlags.EnterReturnsTrue))
