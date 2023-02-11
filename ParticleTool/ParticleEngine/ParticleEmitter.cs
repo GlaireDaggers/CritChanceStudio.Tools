@@ -53,6 +53,9 @@ public class ParticleEmitter
     public Vector2 minPosition = Vector2.Zero;
     public Vector2 maxPosition = Vector2.Zero;
 
+    public float positionMinRadius = 0f;
+    public float positionMaxRadius = 0f;
+
     public float minRotation = 0f;
     public float maxRotation = 0f;
 
@@ -80,6 +83,13 @@ public class ParticleEmitter
 
     public float drag = 0f;
     public float angularDrag = 0f;
+
+    public Vector2 radialImpulseOrigin = Vector2.Zero;
+    public float radialImpulseMin = 0f;
+    public float radialImpulseMax = 0f;
+
+    public Vector2 radialForceOrigin = Vector2.Zero;
+    public float radialForce = 0f;
 
     private Particle[] _particles;
     private int _particleCount;
@@ -160,6 +170,16 @@ public class ParticleEmitter
                     p.force = RandomRange(minLinearForce, maxLinearForce, linearForceRangeType);
                     p.angularForce = RandomRange(minAngularForce, maxAngularForce);
 
+                    Vector2 randPos = Vector2.Transform(Vector2.UnitX, Matrix.CreateRotationZ(RandomRange(0f, MathF.Tau)));
+                    randPos *= RandomRange(positionMinRadius, positionMaxRadius);
+                    p.position += randPos;
+
+                    Vector2 radialImpulseDir = p.position - radialImpulseOrigin;
+                    if (radialImpulseDir.LengthSquared() > float.Epsilon)
+                    {
+                        p.velocity += (radialImpulseDir / radialImpulseDir.Length()) * RandomRange(radialImpulseMin, radialImpulseMax);
+                    }
+
                     _particles[_particleCount++] = p;
                 }
             }
@@ -177,6 +197,12 @@ public class ParticleEmitter
 
             p.velocity -= (p.velocity * drag * deltaTime);
             p.angularVelocity -= (p.angularVelocity * angularDrag * deltaTime);
+
+            Vector2 radialForceDir = p.position - radialForceOrigin;
+            if (radialForceDir.LengthSquared() > float.Epsilon)
+            {
+                p.velocity += (radialForceDir / radialForceDir.Length()) * radialForce * deltaTime;
+            }
 
             _particles[i] = p;
 

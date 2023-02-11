@@ -76,6 +76,8 @@ public class EmitterDetailsWindow : EditorWindow
             InputFloat("End Scale", ref activeEmitter.endScale, 0f);
             ColorField("Start Color", ref activeEmitter.startColor);
             ColorField("End Color", ref activeEmitter.endColor);
+            InputFloat("Fade In Duration", ref activeEmitter.fadeInDuration, 0f, 1f);
+            InputFloat("Fade Out Duration", ref activeEmitter.fadeOutDuration, 0f, 1f);
             BlendModeDropdown("Blend Mode", ref activeEmitter.blendMode);
 
             InputFloat("Start Delay", ref activeEmitter.emitter.startDelay, 0f);
@@ -87,6 +89,8 @@ public class EmitterDetailsWindow : EditorWindow
             InputFloat("Max Lifetime", ref activeEmitter.emitter.maxLifetime, 0f);
             DragVector2("Min Position", ref activeEmitter.emitter.minPosition);
             DragVector2("Max Position", ref activeEmitter.emitter.maxPosition);
+            ImGui.InputFloat("Position Min Radius", ref activeEmitter.emitter.positionMinRadius);
+            ImGui.InputFloat("Position Max Radius", ref activeEmitter.emitter.positionMaxRadius);
             ImGui.InputFloat("Min Rotation", ref activeEmitter.emitter.minRotation);
             ImGui.InputFloat("Max Rotation", ref activeEmitter.emitter.maxRotation);
             DragVector2("Min Scale", ref activeEmitter.emitter.minScale);
@@ -107,6 +111,13 @@ public class EmitterDetailsWindow : EditorWindow
             RandomRangeTypeDropdown("Color Random Mode", ref activeEmitter.emitter.colorRangeType);
             ImGui.InputFloat("Drag", ref activeEmitter.emitter.drag);
             ImGui.InputFloat("Angular Drag", ref activeEmitter.emitter.angularDrag);
+
+            DragVector2("Radial Impulse Origin", ref activeEmitter.emitter.radialImpulseOrigin);
+            ImGui.InputFloat("Radial Impulse Min", ref activeEmitter.emitter.radialImpulseMin);
+            ImGui.InputFloat("Radial Impulse Max", ref activeEmitter.emitter.radialImpulseMax);
+
+            DragVector2("Radial Force Origin", ref activeEmitter.emitter.radialForceOrigin);
+            ImGui.InputFloat("Radial Force", ref activeEmitter.emitter.radialForce);
         }
     }
 
@@ -139,6 +150,14 @@ public class EmitterDetailsWindow : EditorWindow
     {
         bool ret = ImGui.InputFloat(label, ref value);
         if (value < min) value = min;
+        return ret;
+    }
+
+    private bool InputFloat(string label, ref float value, float min, float max)
+    {
+        bool ret = ImGui.InputFloat(label, ref value);
+        if (value < min) value = min;
+        if (value > max) value = max;
         return ret;
     }
 
