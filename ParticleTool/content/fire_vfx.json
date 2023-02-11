@@ -15,8 +15,10 @@
         "R": 255,
         "G": 0,
         "B": 0,
-        "A": 0
+        "A": 255
       },
+      "fadeInDuration": 0.2,
+      "fadeOutDuration": 0.5,
       "startScale": 0.75,
       "endScale": 1.5,
       "blendMode": "Additive",
@@ -104,6 +106,8 @@
         "B": 0,
         "A": 255
       },
+      "fadeInDuration": 0.0,
+      "fadeOutDuration": 0.0,
       "startScale": 0.05,
       "endScale": 0.0,
       "blendMode": "Additive",

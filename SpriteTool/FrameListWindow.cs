@@ -60,6 +60,11 @@ public class FrameListWindow : EditorWindow
                 ImGui.ImageButton("_frame_" + i, tool.textureManager.GetImGuiHandle(frame.srcTexture), new Num.Vector2(frame.srcRect.Width, frame.srcRect.Height),
                     uvMin, uvMax);
 
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip(frame.srcTexture);
+                }
+
                 if (ImGui.BeginDragDropSource())
                 {
                     // begin drag-drop operation with this SpriteFrame

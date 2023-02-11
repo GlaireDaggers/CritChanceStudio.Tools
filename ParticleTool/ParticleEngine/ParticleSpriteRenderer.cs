@@ -25,6 +25,9 @@ public class ParticleSpriteRenderer : ParticleRenderer
     public Color startColor = Color.White;
     public Color endColor = Color.White;
 
+    public float fadeInDuration = 0f;
+    public float fadeOutDuration = 0f;
+
     public float startScale = 1f;
     public float endScale = 1f;
 
@@ -78,6 +81,15 @@ public class ParticleSpriteRenderer : ParticleRenderer
                 int frameNum = (int)(normalizedAge * totalFrames * cycles);
                 int frameColumn = frameNum % columns;
                 int frameRow = frameNum / columns;
+
+                if (normalizedAge < fadeInDuration)
+                {
+                    tint.A = (byte)(normalizedAge / fadeInDuration * tint.A);
+                }
+                else if (normalizedAge > 1f - fadeOutDuration)
+                {
+                    tint.A = (byte)((1f - normalizedAge) / fadeOutDuration * tint.A);
+                }
 
                 Vector4 particleCol = tint.ToVector4() * particles[i].tint.ToVector4();
 

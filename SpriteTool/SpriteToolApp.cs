@@ -441,8 +441,10 @@ public class SpriteToolApp : ToolApp
         {
             SaveAs();
         }
-
-        Save(activeDocumentPath);
+        else
+        {
+            Save(activeDocumentPath);
+        }
     }
 
     private void Save(string path)
