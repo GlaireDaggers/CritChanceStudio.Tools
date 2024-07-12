@@ -1,2 +1,0 @@
-cd SpriteTool
-.\SpriteTool.exe

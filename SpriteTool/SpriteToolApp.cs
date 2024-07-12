@@ -291,7 +291,10 @@ public class SpriteToolApp : ToolApp
 
     private void Export()
     {
-        FileSave("json", onSave: (path) =>
+        // by default: start in the same folder as the sprite project
+        string docPath = activeDocumentPath != null ? Path.GetDirectoryName(activeDocumentPath) : null;
+
+        FileSave("json", defaultPath: docPath, onSave: (path) =>
         {
             // pack all frames into a texture sheet
             PackingRectangle[] rects = new PackingRectangle[activeDocument.frames.Count];
@@ -300,10 +303,11 @@ public class SpriteToolApp : ToolApp
 
             for (int i = 0; i < rects.Length; i++)
             {
+                // add 1 pixel padding around each frame in atlas
                 rects[i] = new PackingRectangle((uint)activeDocument.frames[i].srcRect.X,
                     (uint)activeDocument.frames[i].srcRect.Y,
-                    (uint)activeDocument.frames[i].srcRect.Width,
-                    (uint)activeDocument.frames[i].srcRect.Height, i);
+                    (uint)activeDocument.frames[i].srcRect.Width + 2,
+                    (uint)activeDocument.frames[i].srcRect.Height + 2, i);
             }
 
             RectanglePacker.Pack(rects, out PackingRectangle atlasBounds, PackingHints.FindBest);
@@ -311,15 +315,21 @@ public class SpriteToolApp : ToolApp
             // create texture atlas
             Texture2D atlas = new Texture2D(GraphicsDevice, (int)atlasBounds.Width, (int)atlasBounds.Height, false, SurfaceFormat.Color);
 
+            // clear atlas pixels
+            Color[] clearPx = new Color[atlas.Width * atlas.Height];
+            Array.Fill(clearPx, new Color(0, 0, 0, 0));
+            atlas.SetData(clearPx);
+
             // copy each frame into atlas, map SpriteFrame -> rectangle in atlas
             for (int i = 0; i < rects.Length; i++)
             {
-                Rectangle actualRect = new Rectangle((int)rects[i].X, (int)rects[i].Y, (int)rects[i].Width, (int)rects[i].Height);
+                // account for 1 pixel padding when copying data into atlas
+                Rectangle actualRect = new Rectangle((int)rects[i].X + 1, (int)rects[i].Y + 1, (int)rects[i].Width - 2, (int)rects[i].Height - 2);
                 actualRects[i] = actualRect;
                 idMap.Add(activeDocument.frames[rects[i].Id], i);
 
                 Texture2D srcTex = textureManager.GetTexture(activeDocument.frames[rects[i].Id].srcTexture);
-                Color[] srcData = new Color[rects[i].Width * rects[i].Height];
+                Color[] srcData = new Color[actualRects[i].Width * actualRects[i].Height];
                 srcTex.GetData(0, activeDocument.frames[rects[i].Id].srcRect, srcData, 0, srcData.Length);
                 atlas.SetData(0, actualRect, srcData, 0, srcData.Length);
             }
@@ -400,7 +410,7 @@ public class SpriteToolApp : ToolApp
 
     private void Open()
     {
-        FileOpen("json", onOpen: (path) =>
+        FileOpen("spriteproj", onOpen: (path) =>
         {
             try
             {
@@ -429,7 +439,7 @@ public class SpriteToolApp : ToolApp
 
     private void SaveAs()
     {
-        FileSave("json", onSave: (path) =>
+        FileSave("spriteproj", onSave: (path) =>
         {
             Save(path);
         });

@@ -149,13 +149,15 @@ public class ToolApp : Game
             ImGui.EndMainMenuBar();
         }
 
-        ImGui.SetNextWindowPos(new System.Numerics.Vector2(0, menuBarSize.Y));
+        /*ImGui.SetNextWindowPos(new System.Numerics.Vector2(0, menuBarSize.Y));
         ImGui.SetNextWindowSize(new System.Numerics.Vector2(GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight - menuBarSize.Y));
         if (ImGui.Begin("__dockmain", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoBringToFrontOnFocus))
         {
             OnGUI();
             ImGui.End();
-        }
+        }*/
+
+        ImGui.DockSpaceOverViewport();
 
         foreach (var win in _windows)
         {
