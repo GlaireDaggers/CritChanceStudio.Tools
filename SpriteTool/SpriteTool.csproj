@@ -21,6 +21,7 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <PublishSingleFile>True</PublishSingleFile>
+    <SelfContained>True</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>
