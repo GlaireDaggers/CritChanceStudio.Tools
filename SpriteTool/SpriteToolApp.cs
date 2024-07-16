@@ -17,6 +17,7 @@ using SDL2;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 
 public class SpriteToolApp : ToolApp
 {
@@ -40,6 +41,38 @@ public class SpriteToolApp : ToolApp
 
     private KeyboardState _prevKb = new KeyboardState();
     private KeyboardState _curKb = new KeyboardState();
+
+    private static Queue<string> _frameImportQueue = new Queue<string>();
+    private static Queue<string> _asepriteImportQueue = new Queue<string>();
+
+    private static unsafe int EventFilter(nint userdata, nint sdlEvt) {
+        SDL.SDL_Event* evt = (SDL.SDL_Event*)sdlEvt;
+
+        if (evt->type == SDL.SDL_EventType.SDL_DROPFILE)
+        {
+            var filePath = Marshal.PtrToStringUTF8(evt->drop.file)!;
+            Console.WriteLine("Dropped file: " + filePath);
+
+            string ext = Path.GetExtension(filePath);
+
+            if (ext == ".png")
+            {
+                lock (_frameImportQueue)
+                {
+                    _frameImportQueue.Enqueue(filePath);
+                }
+            }
+            else if (ext == ".aseprite" || ext == ".ase")
+            {
+                lock (_asepriteImportQueue)
+                {
+                    _asepriteImportQueue.Enqueue(filePath);
+                }
+            }
+        }
+
+        return 0;
+    }
 
     public SpriteToolApp() : base("Sprite Tool")
     {
@@ -125,6 +158,8 @@ public class SpriteToolApp : ToolApp
     {
         base.LoadContent();
 
+        SDL.SDL_AddEventWatch(EventFilter, 0);
+
         textureManager = new TextureManager(this);
 
         GetWindow<SpriteToolViewport>();
@@ -145,6 +180,22 @@ public class SpriteToolApp : ToolApp
     protected override void Update(GameTime gameTime)
     {
         base.Update(gameTime);
+
+        lock (_frameImportQueue)
+        {
+            while (_frameImportQueue.Count > 0)
+            {
+                GetWindow<FrameListWindow>().TryImportFrame(_frameImportQueue.Dequeue());
+            }
+        }
+
+        lock (_asepriteImportQueue)
+        {
+            while (_asepriteImportQueue.Count > 0)
+            {
+                GetWindow<FrameListWindow>().TryImportAseprite(_asepriteImportQueue.Dequeue());
+            }
+        }
 
         _prevKb = _curKb;
         _curKb = Keyboard.GetState();
@@ -328,7 +379,7 @@ public class SpriteToolApp : ToolApp
                 actualRects[i] = actualRect;
                 idMap.Add(activeDocument.frames[rects[i].Id], i);
 
-                Texture2D srcTex = textureManager.GetTexture(activeDocument.frames[rects[i].Id].srcTexture);
+                Texture2D srcTex = activeDocument.frames[rects[i].Id].GetTexture(textureManager);
                 Color[] srcData = new Color[actualRects[i].Width * actualRects[i].Height];
                 srcTex.GetData(0, activeDocument.frames[rects[i].Id].srcRect, srcData, 0, srcData.Length);
                 atlas.SetData(0, actualRect, srcData, 0, srcData.Length);
@@ -359,7 +410,7 @@ public class SpriteToolApp : ToolApp
                     {
                         frame = idMap[srcAnim.keyframes[j].frame],
                         duration = srcAnim.keyframes[j].duration,
-                        offset = srcAnim.keyframes[j].offset,
+                        offset = srcAnim.keyframes[j].offset + srcAnim.keyframes[j].frame.offset,
                         motionDelta = srcAnim.keyframes[j].motionDelta,
                         hitboxes = srcAnim.keyframes[j].hitboxes.ToArray(),
                         sockets = srcAnim.keyframes[j].sockets.ToArray(),

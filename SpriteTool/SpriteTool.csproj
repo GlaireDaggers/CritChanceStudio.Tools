@@ -7,6 +7,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AsepriteDotNet" Version="1.8.2" />
     <PackageReference Include="ImGUI.NET" Version="1.89.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="RectpackSharp" Version="1.0.2" />

@@ -35,11 +35,11 @@ public class KeyframeDetailsWindow : EditorWindow
             {
                 // draw sprite frame
                 var frame = tool.activeKeyframe.frame;
-                Texture2D tex = tool.textureManager.GetTexture(frame.srcTexture);
+                Texture2D tex = frame.GetTexture(tool.textureManager);
                 Num.Vector2 uvMin = new Num.Vector2(frame.srcRect.Left / (float)tex.Width, frame.srcRect.Top / (float)tex.Height);
                 Num.Vector2 uvMax = new Num.Vector2(frame.srcRect.Right / (float)tex.Width, frame.srcRect.Bottom / (float)tex.Height);
 
-                ImGui.ImageButton("_keyframe_details_frame", tool.textureManager.GetImGuiHandle(frame.srcTexture), new Num.Vector2(frame.srcRect.Width, frame.srcRect.Height),
+                ImGui.ImageButton("_keyframe_details_frame", frame.GetImGuiHandle(tool.textureManager), new Num.Vector2(frame.srcRect.Width, frame.srcRect.Height),
                     uvMin, uvMax);
 
                 // allow sprite frames to be dragged here to swap out sprites for this keyframe

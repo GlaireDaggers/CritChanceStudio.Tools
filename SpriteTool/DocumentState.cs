@@ -1,6 +1,7 @@
 ﻿namespace CritChanceStudio.Tools;
 
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,14 +13,23 @@ public interface ICloneable<T>
     T Clone();
 }
 
+public enum SpriteFrameSource
+{
+    Image,
+    AsepriteProject
+}
+
 public struct SpriteFrame : IEquatable<SpriteFrame>
 {
-    public string srcTexture;
+    public SpriteFrameSource source;
+    public string srcPath;
+    public int srcIndex;
     public Rectangle srcRect;
+    public Vector2 offset;
 
     public bool Equals(SpriteFrame other)
     {
-        return srcTexture == other.srcTexture && srcRect == other.srcRect;
+        return source == other.source && srcIndex == other.srcIndex && srcPath == other.srcPath && srcRect == other.srcRect && offset == other.offset;
     }
 
     public override bool Equals([NotNullWhen(true)] object obj)
@@ -30,7 +40,27 @@ public struct SpriteFrame : IEquatable<SpriteFrame>
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(srcTexture, srcRect);
+        return HashCode.Combine(source, srcPath, srcIndex, srcRect, offset);
+    }
+
+    public Texture2D GetTexture(TextureManager texManager)
+    {
+        // FIXME:
+        // if you import an aseprite project and then remove frames, this will crash
+        // need to figure out how to handle that case... some kind of dummy "error" placeholder?
+
+        switch (source)
+        {
+            case SpriteFrameSource.Image: return texManager.GetImageTexture(srcPath);
+            case SpriteFrameSource.AsepriteProject: return texManager.GetAsepriteFrames(srcPath)[srcIndex];
+        }
+
+        return null;
+    }
+
+    public nint GetImGuiHandle(TextureManager texManager)
+    {
+        return texManager.GetImGuiHandle(GetTexture(texManager));
     }
 }
 
@@ -105,7 +135,7 @@ public class DocumentState : ICloneable<DocumentState>
         for (int i = 0; i < frames.Count; i++)
         {
             var frame = frames[i];
-            frame.srcTexture = frame.srcTexture.Replace('\\', '/');
+            frame.srcPath = frame.srcPath.Replace('\\', '/');
             frames[i] = frame;
         }
 
@@ -113,7 +143,7 @@ public class DocumentState : ICloneable<DocumentState>
         {
             foreach (var keyframe in anim.keyframes)
             {
-                keyframe.frame.srcTexture = keyframe.frame.srcTexture.Replace('\\', '/');
+                keyframe.frame.srcPath = keyframe.frame.srcPath.Replace('\\', '/');
             }
         }
     }
@@ -123,7 +153,7 @@ public class DocumentState : ICloneable<DocumentState>
         for (int i = 0; i < frames.Count; i++)
         {
             var frame = frames[i];
-            frame.srcTexture = Path.GetRelativePath(rootDirectory, frame.srcTexture);
+            frame.srcPath = Path.GetRelativePath(rootDirectory, frame.srcPath);
             frames[i] = frame;
         }
 
@@ -131,7 +161,7 @@ public class DocumentState : ICloneable<DocumentState>
         {
             foreach (var keyframe in anim.keyframes)
             {
-                keyframe.frame.srcTexture = Path.GetRelativePath(rootDirectory, keyframe.frame.srcTexture);
+                keyframe.frame.srcPath = Path.GetRelativePath(rootDirectory, keyframe.frame.srcPath);
             }
         }
     }
@@ -143,7 +173,7 @@ public class DocumentState : ICloneable<DocumentState>
         for (int i = 0; i < frames.Count; i++)
         {
             var frame = frames[i];
-            frame.srcTexture = Path.Combine(rootDirectory, frame.srcTexture);
+            frame.srcPath = Path.Combine(rootDirectory, frame.srcPath);
             frames[i] = frame;
         }
 
@@ -151,7 +181,7 @@ public class DocumentState : ICloneable<DocumentState>
         {
             foreach (var keyframe in anim.keyframes)
             {
-                keyframe.frame.srcTexture = Path.Combine(rootDirectory, keyframe.frame.srcTexture);
+                keyframe.frame.srcPath = Path.Combine(rootDirectory, keyframe.frame.srcPath);
             }
         }
     }

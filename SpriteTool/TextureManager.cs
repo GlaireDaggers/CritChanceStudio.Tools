@@ -5,9 +5,21 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
+using AsepriteDotNet.Aseprite;
+using AsepriteDotNet.IO;
+using AsepriteDotNet.Common;
+using AsepriteDotNet.Aseprite.Types;
+using Microsoft.Xna.Framework;
+
 public class TextureManager
 {
+    private struct AsepriteProject
+    {
+        public Texture2D[] frames;
+    }
+
     private Dictionary<string, Texture2D> _cache = new Dictionary<string, Texture2D>();
+    private Dictionary<string, AsepriteProject> _asepriteCache = new Dictionary<string, AsepriteProject>();
     private Dictionary<Texture2D, IntPtr> _imguiMap = new Dictionary<Texture2D, IntPtr>();
 
     private GraphicsDevice _graphicsDevice;
@@ -40,7 +52,7 @@ public class TextureManager
                 // if it fails, just put the old texture back
                 try
                 {
-                    Texture2D newTex = GetTexture(path);
+                    Texture2D newTex = GetImageTexture(path);
                     _imguiMap.Remove(oldTex);
                 }
                 catch
@@ -51,7 +63,37 @@ public class TextureManager
         }
     }
 
-    public Texture2D GetTexture(string path)
+    public Texture2D[] GetAsepriteFrames(string path)
+    {
+        path = Path.GetFullPath(path);
+
+        if (_asepriteCache.ContainsKey(path))
+        {
+            return _asepriteCache[path].frames;
+        }
+
+        using (var stream = File.OpenRead(path))
+        {
+            AsepriteFile asepriteFile = AsepriteFileLoader.FromStream(path, stream, true, false);
+            Texture2D[] frames = new Texture2D[asepriteFile.FrameCount];
+
+            for (int i = 0; i < asepriteFile.FrameCount; i++)
+            {
+                Rgba32[] pixels = asepriteFile.Frames[i].FlattenFrame();
+                frames[i] = new Texture2D(_graphicsDevice, asepriteFile.CanvasWidth, asepriteFile.CanvasHeight, false, SurfaceFormat.Color);
+                frames[i].SetData(pixels);
+            }
+
+            _asepriteCache[path] = new AsepriteProject
+            {
+                frames = frames
+            };
+
+            return frames;
+        }
+    }
+
+    public Texture2D GetImageTexture(string path)
     {
         path = Path.GetFullPath(path);
 
@@ -82,10 +124,8 @@ public class TextureManager
         }
     }
 
-    public IntPtr GetImGuiHandle(string path)
-    {
-        Texture2D tex = GetTexture(path);
-        
+    public IntPtr GetImGuiHandle(Texture2D tex)
+    {   
         if (_imguiMap.ContainsKey(tex))
         {
             return _imguiMap[tex];

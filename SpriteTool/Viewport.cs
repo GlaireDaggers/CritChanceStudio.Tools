@@ -172,9 +172,9 @@ public class SpriteToolViewport : ViewportWindow2D
             RasterizerState.CullNone, null, CameraMatrix);
         {
             Keyframe keyframe = tool.activeAnimation.keyframes[_frame];
-            Texture2D tex = tool.textureManager.GetTexture(keyframe.frame.srcTexture);
+            Texture2D tex = keyframe.frame.GetTexture(tool.textureManager);
 
-            spriteBatch.Draw(tex, keyframe.offset + _posPreview, keyframe.frame.srcRect, Color.White);
+            spriteBatch.Draw(tex, keyframe.offset + keyframe.frame.offset + _posPreview, keyframe.frame.srcRect, Color.White);
         }
         spriteBatch.End();
     }
