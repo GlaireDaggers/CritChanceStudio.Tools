@@ -58,13 +58,21 @@ public class AnimationListWindow : EditorWindow
                 ImGui.SameLine();
                 if (ImGui.Button("Delete##anim_" + i))
                 {
-                    tool.RegisterUndo("Delete animation");
+                    tool.RegisterUndo("Delete Animation");
                     if (anim == tool.activeAnimation)
                     {
                         tool.activeAnimation = null;
                         tool.activeKeyframe = null;
                     }
                     tool.activeDocument.animations.RemoveAt(i--);
+                }
+                ImGui.SameLine();
+                if (ImGui.Button("Clone##anim_" + i))
+                {
+                    tool.RegisterUndo("Clone Animation");
+                    var newAnim = anim.Clone();
+                    tool.activeDocument.animations.Add(newAnim);
+                    tool.activeAnimation = newAnim;
                 }
             }
 

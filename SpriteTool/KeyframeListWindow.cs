@@ -42,13 +42,13 @@ public class KeyframeListWindow : EditorWindow
                     ImGui.InvisibleButton("__keyframe_drop_insert_" + i, new Num.Vector2(4, ImGui.GetContentRegionAvail().Y));
                     if (ImGui.BeginDragDropTarget())
                     {
-                        if (ToolApp.instance.AcceptDragDropPayload(out SpriteFrame frame))
+                        if (ToolApp.instance.AcceptDragDropPayload(out SpriteFramePayload frame))
                         {
                             // insert new keyframe here
                             tool.RegisterUndo("Add new keyframe");
                             tool.activeAnimation.keyframes.Insert(i, new Keyframe()
                             {
-                                frame = frame
+                                frameIdx = frame.idx
                             });
                         }
                         ImGui.EndDragDropTarget();
@@ -71,13 +71,13 @@ public class KeyframeListWindow : EditorWindow
                 ImGui.InvisibleButton("__keyframe_drop_append", ImGui.GetContentRegionAvail());
                 if (ImGui.BeginDragDropTarget())
                 {
-                    if (ToolApp.instance.AcceptDragDropPayload(out SpriteFrame frame))
+                    if (ToolApp.instance.AcceptDragDropPayload(out SpriteFramePayload frame))
                     {
                         // append new keyframe to end
                         tool.RegisterUndo("Add new keyframe");
                         tool.activeAnimation.keyframes.Add(new Keyframe()
                         {
-                            frame = frame
+                            frameIdx = frame.idx
                         });
                     }
                     ImGui.EndDragDropTarget();

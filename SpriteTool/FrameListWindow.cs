@@ -8,9 +8,10 @@ using NativeFileDialogSharp;
 using System;
 using Num = System.Numerics;
 
-using AsepriteDotNet.Aseprite;
-using AsepriteDotNet.IO;
-using System.IO;
+public struct SpriteFramePayload
+{
+    public int idx;
+}
 
 public class FrameListWindow : EditorWindow
 {
@@ -25,17 +26,16 @@ public class FrameListWindow : EditorWindow
 
         try
         {
-            Texture2D texture = tool.textureManager.GetImageTexture(path);
-            Rectangle srcRect = TrimTexture(texture);
-
             tool.RegisterUndo("Import Frames");
-            tool.activeDocument.frames.Add(new SpriteFrame
+
+            var frame = new SpriteFrame
             {
                 source = SpriteFrameSource.Image,
                 srcPath = path,
-                srcRect = srcRect,
-                offset = new Vector2(srcRect.X, srcRect.Y)
-            });
+            };
+            frame.CalcMetrics(tool.textureManager);
+
+            tool.activeDocument.frames.Add(frame);
         }
         catch (Exception e)
         {
@@ -51,26 +51,25 @@ public class FrameListWindow : EditorWindow
     {
         SpriteToolApp tool = ToolApp.instance as SpriteToolApp;
 
+        var asepriteProject = tool.textureManager.GetAsepriteFile(path);
+
         try
         {
-            Texture2D[] frames = tool.textureManager.GetAsepriteFrames(path);
             tool.RegisterUndo("Import Frames");
 
             int frameBase = tool.activeDocument.frames.Count;
 
-            for (int i = 0; i < frames.Length; i++)
+            for (int i = 0; i < asepriteProject.FrameCount; i++)
             {
-                Texture2D texture = frames[i];
-                Rectangle srcRect = TrimTexture(texture);
-
-                tool.activeDocument.frames.Add(new SpriteFrame
+                var frame = new SpriteFrame
                 {
                     source = SpriteFrameSource.AsepriteProject,
                     srcPath = path,
-                    srcIndex = i,
-                    srcRect = srcRect,
-                    offset = new Vector2(srcRect.X, srcRect.Y)
-                });
+                    srcIndex = i
+                };
+                frame.CalcMetrics(tool.textureManager);
+
+                tool.activeDocument.frames.Add(frame);
             }
 
             tool.ShowDialog("Import Animations", "Import tagged ranges from file as animations?", new string[] { "Yes", "No" }, (choice) =>
@@ -79,32 +78,26 @@ public class FrameListWindow : EditorWindow
                 {
                     tool.RegisterUndo("Import Animations");
 
-                    string asepritePath = Path.GetFullPath(path);
-                    using (var stream = File.OpenRead(asepritePath))
+                    // set up an animation for each tag
+                    foreach (var tag in asepriteProject.Tags)
                     {
-                        AsepriteFile asepriteFile = AsepriteFileLoader.FromStream(path, stream, true, false);
-
-                        // set up an animation for each tag
-                        foreach (var tag in asepriteFile.Tags)
+                        Animation anim = new Animation
                         {
-                            Animation anim = new Animation
-                            {
-                                name = tag.Name,
-                                looping = tag.Repeat == 0,
-                            };
+                            name = tag.Name,
+                            looping = tag.Repeat == 0,
+                        };
 
-                            for (int i = tag.From; i <= tag.To; i++)
+                        for (int i = tag.From; i <= tag.To; i++)
+                        {
+                            anim.keyframes.Add(new Keyframe
                             {
-                                anim.keyframes.Add(new Keyframe
-                                {
-                                    duration = (int)asepriteFile.Frames[i].Duration.TotalMilliseconds,
-                                    offset = new Vector2(-asepriteFile.CanvasWidth / 2, -asepriteFile.CanvasHeight / 2),
-                                    frame = tool.activeDocument.frames[frameBase + i],
-                                });
-                            }
-
-                            tool.activeDocument.animations.Add(anim);
+                                duration = (int)asepriteProject.Frames[i].Duration.TotalMilliseconds,
+                                offset = new Vector2(-asepriteProject.CanvasWidth / 2, -asepriteProject.CanvasHeight / 2),
+                                frameIdx = frameBase + i,
+                            });
                         }
+
+                        tool.activeDocument.animations.Add(anim);
                     }
                 }
             });
@@ -164,7 +157,9 @@ public class FrameListWindow : EditorWindow
                 if (ImGui.BeginDragDropSource())
                 {
                     // begin drag-drop operation with this SpriteFrame
-                    ToolApp.instance.SetDragDropPayload(frame);
+                    ToolApp.instance.SetDragDropPayload(new SpriteFramePayload {
+                        idx = i
+                    });
                     ImGui.Image(frame.GetImGuiHandle(tool.textureManager), new Num.Vector2(frame.srcRect.Width, frame.srcRect.Height));
                     ImGui.EndDragDropSource();
                 }
@@ -173,8 +168,26 @@ public class FrameListWindow : EditorWindow
                 
                 if (ImGui.Button("Delete"))
                 {
-                    tool.RegisterUndo("Delete frame");
-                    tool.activeDocument.frames.RemoveAt(i--);
+                    // check if any animations still refer to this frame
+                    if (FrameUsed(i, tool.activeDocument))
+                    {
+                        int frameIdx = i;
+                        tool.ShowDialog("Delete used frame",
+                            "One or more animations still refer to this frame. Are you sure you want to delete it? (keyframes referencing this frame will be deleted)",
+                            new string[] { "Yes", "No" }, (choice) =>
+                        {
+                            if (choice == 0)
+                            {
+                                tool.RegisterUndo("Delete frame");
+                                DeleteFrame(tool.activeDocument, frameIdx);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        tool.RegisterUndo("Delete frame");
+                        DeleteFrame(tool.activeDocument, i--);
+                    }
                 }
             }
 
@@ -182,44 +195,39 @@ public class FrameListWindow : EditorWindow
         }
     }
 
-    private Rectangle TrimTexture(Texture2D texture)
+    private void DeleteFrame(DocumentState doc, int idx)
     {
-        // find tight-fitting src rect
+        // fix up frame IDs
 
-        Color[] c = new Color[texture.Width * texture.Height];
-        texture.GetData(c);
-
-        int minJ = 0;
-        for (int j = 0; j < texture.Height; j++)
+        foreach (var anim in doc.animations)
         {
-            for (int i = 0; i < texture.Width; i++)
+            for (int j = 0; j < anim.keyframes.Count; j++)
             {
-                if (c[i + (j * texture.Width)].A > 0)
-                {
-                    minJ = j;
-                    j = texture.Height;
-                    break;
+                if (anim.keyframes[j].frameIdx > idx) {
+                    anim.keyframes[j].frameIdx--;
+                }
+                else if (anim.keyframes[j].frameIdx == idx) {
+                    anim.keyframes.RemoveAt(j);
                 }
             }
         }
 
-        int minI = texture.Width;
-        int maxI = 0;
+        doc.frames.RemoveAt(idx);
+    }
 
-        int maxJ = texture.Height;
-        for (int j = minJ; j < texture.Height; j++)
+    private bool FrameUsed(int idx, DocumentState doc)
+    {
+        foreach (var anim in doc.animations)
         {
-            for (int i = 0; i < texture.Width; i++)
+            for (int j = 0; j < anim.keyframes.Count; j++)
             {
-                if (c[i + (j * texture.Width)].A > 0)
+                if (anim.keyframes[j].frameIdx == idx)
                 {
-                    minI = Math.Min(minI, i);
-                    maxI = Math.Max(maxI, i);
-                    maxJ = j;
+                    return true;
                 }
             }
         }
 
-        return new Rectangle(minI, minJ, (maxI - minI) + 1, (maxJ - minJ) + 1);
+        return false;
     }
 }

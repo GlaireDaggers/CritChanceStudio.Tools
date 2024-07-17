@@ -34,7 +34,7 @@ public class KeyframeDetailsWindow : EditorWindow
             else
             {
                 // draw sprite frame
-                var frame = tool.activeKeyframe.frame;
+                var frame = tool.activeDocument.frames[tool.activeKeyframe.frameIdx];
                 Texture2D tex = frame.GetTexture(tool.textureManager);
                 Num.Vector2 uvMin = new Num.Vector2(frame.srcRect.Left / (float)tex.Width, frame.srcRect.Top / (float)tex.Height);
                 Num.Vector2 uvMax = new Num.Vector2(frame.srcRect.Right / (float)tex.Width, frame.srcRect.Bottom / (float)tex.Height);
@@ -42,13 +42,25 @@ public class KeyframeDetailsWindow : EditorWindow
                 ImGui.ImageButton("_keyframe_details_frame", frame.GetImGuiHandle(tool.textureManager), new Num.Vector2(frame.srcRect.Width, frame.srcRect.Height),
                     uvMin, uvMax);
 
+                if (ImGui.IsItemHovered())
+                {
+                    if (frame.source == SpriteFrameSource.AsepriteProject)
+                    {
+                        ImGui.SetTooltip($"{frame.srcPath} [{frame.srcIndex}]");
+                    }
+                    else
+                    {
+                        ImGui.SetTooltip(frame.srcPath);
+                    }
+                }
+
                 // allow sprite frames to be dragged here to swap out sprites for this keyframe
                 if (ImGui.BeginDragDropTarget())
                 {
-                    if (tool.AcceptDragDropPayload(out SpriteFrame newFrame))
+                    if (tool.AcceptDragDropPayload(out SpriteFramePayload newFrame))
                     {
                         tool.RegisterUndo("Modify keyframe");
-                        tool.activeKeyframe.frame = newFrame;
+                        tool.activeKeyframe.frameIdx = newFrame.idx;
                     }
                     ImGui.EndDragDropTarget();
                 }
@@ -64,6 +76,20 @@ public class KeyframeDetailsWindow : EditorWindow
 
                     tool.RegisterUndo("Modify keyframe");
                     tool.activeKeyframe.duration = duration;
+                }
+
+                bool mirrorX = tool.activeKeyframe.mirrorX;
+                if (ImGui.Checkbox("Mirror X", ref mirrorX))
+                {
+                    tool.RegisterUndo("Modify keyframe");
+                    tool.activeKeyframe.mirrorX = mirrorX;
+                }
+
+                bool mirrorY = tool.activeKeyframe.mirrorY;
+                if (ImGui.Checkbox("Mirror Y", ref mirrorY))
+                {
+                    tool.RegisterUndo("Modify keyframe");
+                    tool.activeKeyframe.mirrorY = mirrorY;
                 }
 
                 Num.Vector2 offset = new Num.Vector2(tool.activeKeyframe.offset.X, tool.activeKeyframe.offset.Y);

@@ -15,6 +15,7 @@ public class TextureManager
 {
     private struct AsepriteProject
     {
+        public AsepriteFile file;
         public Texture2D[] frames;
     }
 
@@ -63,34 +64,14 @@ public class TextureManager
         }
     }
 
+    public AsepriteFile GetAsepriteFile(string path)
+    {
+        return GetAsepriteProject(path).file;
+    }
+
     public Texture2D[] GetAsepriteFrames(string path)
     {
-        path = Path.GetFullPath(path);
-
-        if (_asepriteCache.ContainsKey(path))
-        {
-            return _asepriteCache[path].frames;
-        }
-
-        using (var stream = File.OpenRead(path))
-        {
-            AsepriteFile asepriteFile = AsepriteFileLoader.FromStream(path, stream, true, false);
-            Texture2D[] frames = new Texture2D[asepriteFile.FrameCount];
-
-            for (int i = 0; i < asepriteFile.FrameCount; i++)
-            {
-                Rgba32[] pixels = asepriteFile.Frames[i].FlattenFrame();
-                frames[i] = new Texture2D(_graphicsDevice, asepriteFile.CanvasWidth, asepriteFile.CanvasHeight, false, SurfaceFormat.Color);
-                frames[i].SetData(pixels);
-            }
-
-            _asepriteCache[path] = new AsepriteProject
-            {
-                frames = frames
-            };
-
-            return frames;
-        }
+       return GetAsepriteProject(path).frames;
     }
 
     public Texture2D GetImageTexture(string path)
@@ -112,6 +93,37 @@ public class TextureManager
             _watchers.Add(watcher);
 
             return tex;
+        }
+    }
+
+    private AsepriteProject GetAsepriteProject(string path)
+    {
+        path = Path.GetFullPath(path);
+
+        if (_asepriteCache.ContainsKey(path))
+        {
+            return _asepriteCache[path];
+        }
+
+        using (var stream = File.OpenRead(path))
+        {
+            AsepriteFile asepriteFile = AsepriteFileLoader.FromStream(path, stream, true, false);
+            Texture2D[] frames = new Texture2D[asepriteFile.FrameCount];
+
+            for (int i = 0; i < asepriteFile.FrameCount; i++)
+            {
+                Rgba32[] pixels = asepriteFile.Frames[i].FlattenFrame();
+                frames[i] = new Texture2D(_graphicsDevice, asepriteFile.CanvasWidth, asepriteFile.CanvasHeight, false, SurfaceFormat.Color);
+                frames[i].SetData(pixels);
+            }
+
+            _asepriteCache[path] = new AsepriteProject
+            {
+                file = asepriteFile,
+                frames = frames
+            };
+
+            return _asepriteCache[path];
         }
     }
 

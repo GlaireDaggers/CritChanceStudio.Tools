@@ -186,7 +186,7 @@ public class ToolApp : Game
 
             if (ImGui.BeginPopupModal(dialog.title))
             {
-                ImGui.Text(dialog.message);
+                ImGui.TextWrapped(dialog.message);
                 for (int i = 0; i < dialog.buttons.Length; i++)
                 {
                     if (i > 0)

@@ -350,7 +350,6 @@ public class SpriteToolApp : ToolApp
             // pack all frames into a texture sheet
             PackingRectangle[] rects = new PackingRectangle[activeDocument.frames.Count];
             Rectangle[] actualRects = new Rectangle[rects.Length];
-            Dictionary<SpriteFrame, int> idMap = new Dictionary<SpriteFrame, int>();
 
             for (int i = 0; i < rects.Length; i++)
             {
@@ -377,7 +376,6 @@ public class SpriteToolApp : ToolApp
                 // account for 1 pixel padding when copying data into atlas
                 Rectangle actualRect = new Rectangle((int)rects[i].X + 1, (int)rects[i].Y + 1, (int)rects[i].Width - 2, (int)rects[i].Height - 2);
                 actualRects[i] = actualRect;
-                idMap.Add(activeDocument.frames[rects[i].Id], i);
 
                 Texture2D srcTex = activeDocument.frames[rects[i].Id].GetTexture(textureManager);
                 Color[] srcData = new Color[actualRects[i].Width * actualRects[i].Height];
@@ -406,15 +404,31 @@ public class SpriteToolApp : ToolApp
 
                 for (int j = 0; j < srcAnim.keyframes.Count; j++)
                 {
+                    var keyframe = srcAnim.keyframes[j];
+                    var frame = activeDocument.frames[keyframe.frameIdx];
+                    Vector2 frameOffset = frame.offset;
+
+                    // note: we need to "mirror" frame offset when sprite is flipped
+
+                    if (keyframe.mirrorX)
+                    {
+                        frameOffset.X = frame.size.X - frame.offset.X - frame.srcRect.Width;
+                    }
+
+                    if (keyframe.mirrorY)
+                    {
+                        frameOffset.Y = frame.size.Y - frame.offset.Y - frame.srcRect.Height;
+                    }
+
                     exportDoc.animations[i].keyframes[j] = new ExportKeyframe
                     {
-                        frame = idMap[srcAnim.keyframes[j].frame],
-                        duration = srcAnim.keyframes[j].duration,
-                        offset = srcAnim.keyframes[j].offset + srcAnim.keyframes[j].frame.offset,
-                        motionDelta = srcAnim.keyframes[j].motionDelta,
-                        hitboxes = srcAnim.keyframes[j].hitboxes.ToArray(),
-                        sockets = srcAnim.keyframes[j].sockets.ToArray(),
-                        tags = srcAnim.keyframes[j].tags.ToArray(),
+                        frame = keyframe.frameIdx,
+                        duration = keyframe.duration,
+                        offset = keyframe.offset + frameOffset,
+                        motionDelta = keyframe.motionDelta,
+                        hitboxes = keyframe.hitboxes.ToArray(),
+                        sockets = keyframe.sockets.ToArray(),
+                        tags = keyframe.tags.ToArray(),
                     };
                 }
             }
@@ -449,7 +463,10 @@ public class SpriteToolApp : ToolApp
 
     private void New()
     {
-        activeDocument = new DocumentState();
+        activeDocument = new DocumentState
+        {
+            version = DocumentState.FORMAT_VERSION
+        };
         activeAnimation = null;
         activeKeyframe = null;
         _undoStates.Clear();
@@ -469,8 +486,12 @@ public class SpriteToolApp : ToolApp
                 JsonSerializerSettings settings = new JsonSerializerSettings();
                 settings.Converters.Add(new RectangleJsonConverter());
                 settings.Converters.Add(new Vector2JsonConverter());
+                
                 DocumentState newDoc = JsonConvert.DeserializeObject<DocumentState>(filedata, settings);
+                newDoc.MigrateVersion();
                 newDoc.MakePathsAbsolute(Path.GetDirectoryName(path));
+                newDoc.RecalcMetrics(textureManager);
+
                 activeDocument = newDoc;
                 activeAnimation = null;
                 activeKeyframe = null;

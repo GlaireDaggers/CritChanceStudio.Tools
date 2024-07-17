@@ -172,9 +172,29 @@ public class SpriteToolViewport : ViewportWindow2D
             RasterizerState.CullNone, null, CameraMatrix);
         {
             Keyframe keyframe = tool.activeAnimation.keyframes[_frame];
-            Texture2D tex = keyframe.frame.GetTexture(tool.textureManager);
+            var frame = tool.activeDocument.frames[keyframe.frameIdx];
 
-            spriteBatch.Draw(tex, keyframe.offset + keyframe.frame.offset + _posPreview, keyframe.frame.srcRect, Color.White);
+            Texture2D tex = frame.GetTexture(tool.textureManager);
+
+            SpriteEffects flip = SpriteEffects.None;
+            Vector2 frameOffset = frame.offset;
+
+            // note: we also need to "mirror" frame offset when sprite is flipped
+
+            if (keyframe.mirrorX)
+            {
+                flip |= SpriteEffects.FlipHorizontally;
+                frameOffset.X = frame.size.X - frame.offset.X - frame.srcRect.Width;
+            }
+
+            if (keyframe.mirrorY)
+            {
+                flip |= SpriteEffects.FlipVertically;
+                frameOffset.Y = frame.size.Y - frame.offset.Y - frame.srcRect.Height;
+            }
+
+            spriteBatch.Draw(tex, keyframe.offset + frameOffset + _posPreview, frame.srcRect, Color.White, 0.0f,
+                Vector2.Zero, 1.0f, flip, 0.0f);
         }
         spriteBatch.End();
     }

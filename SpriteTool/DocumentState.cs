@@ -2,9 +2,9 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
@@ -24,12 +24,21 @@ public struct SpriteFrame : IEquatable<SpriteFrame>
     public SpriteFrameSource source;
     public string srcPath;
     public int srcIndex;
+
+    [JsonIgnore]
     public Rectangle srcRect;
+
+    [JsonIgnore]
     public Vector2 offset;
+
+    [JsonIgnore]
+    public Vector2 size;
 
     public bool Equals(SpriteFrame other)
     {
-        return source == other.source && srcIndex == other.srcIndex && srcPath == other.srcPath && srcRect == other.srcRect && offset == other.offset;
+        return source == other.source
+            && srcIndex == other.srcIndex
+            && srcPath == other.srcPath;
     }
 
     public override bool Equals([NotNullWhen(true)] object obj)
@@ -40,7 +49,7 @@ public struct SpriteFrame : IEquatable<SpriteFrame>
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(source, srcPath, srcIndex, srcRect, offset);
+        return HashCode.Combine(source, srcPath, srcIndex);
     }
 
     public Texture2D GetTexture(TextureManager texManager)
@@ -62,6 +71,57 @@ public struct SpriteFrame : IEquatable<SpriteFrame>
     {
         return texManager.GetImGuiHandle(GetTexture(texManager));
     }
+
+    public void CalcMetrics(TextureManager texManager)
+    {
+        Texture2D texture = GetTexture(texManager);
+        Rectangle srcRect = TrimTexture(texture);
+
+        this.srcRect = srcRect;
+        offset = new Vector2(srcRect.X, srcRect.Y);
+        size = new Vector2(texture.Width, texture.Height);
+    }
+
+    private static Rectangle TrimTexture(Texture2D texture)
+    {
+        // find tight-fitting src rect
+
+        Color[] c = new Color[texture.Width * texture.Height];
+        texture.GetData(c);
+
+        int minJ = 0;
+        for (int j = 0; j < texture.Height; j++)
+        {
+            for (int i = 0; i < texture.Width; i++)
+            {
+                if (c[i + (j * texture.Width)].A > 0)
+                {
+                    minJ = j;
+                    j = texture.Height;
+                    break;
+                }
+            }
+        }
+
+        int minI = texture.Width;
+        int maxI = 0;
+
+        int maxJ = texture.Height;
+        for (int j = minJ; j < texture.Height; j++)
+        {
+            for (int i = 0; i < texture.Width; i++)
+            {
+                if (c[i + (j * texture.Width)].A > 0)
+                {
+                    minI = Math.Min(minI, i);
+                    maxI = Math.Max(maxI, i);
+                    maxJ = j;
+                }
+            }
+        }
+
+        return new Rectangle(minI, minJ, (maxI - minI) + 1, (maxJ - minJ) + 1);
+    }
 }
 
 public struct Hitbox
@@ -79,20 +139,31 @@ public struct Socket
 public class Keyframe : ICloneable<Keyframe>
 {
     public int duration = 100;
+    public bool mirrorX = false;
+    public bool mirrorY = false;
     public Vector2 offset = Vector2.Zero;
     public Vector2 motionDelta = Vector2.Zero;
-    public SpriteFrame frame;
+    public int frameIdx;
     public List<Hitbox> hitboxes = new List<Hitbox>();
     public List<Socket> sockets = new List<Socket>();
     public List<string> tags = new List<string>();
+
+    #region Version migration (v0.1)
+
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public SpriteFrame? frame = null;
+
+    #endregion
 
     public Keyframe Clone()
     {
         Keyframe clone = new Keyframe();
         clone.duration = duration;
+        clone.mirrorX = mirrorX;
+        clone.mirrorY = mirrorY;
         clone.offset = offset;
         clone.motionDelta = motionDelta;
-        clone.frame = frame;
+        clone.frameIdx = frameIdx;
         clone.hitboxes = DocumentState.Clone(hitboxes);
         clone.sockets = DocumentState.Clone(sockets);
         clone.tags = DocumentState.Clone(tags);
@@ -119,12 +190,55 @@ public class Animation : ICloneable<Animation>
 
 public class DocumentState : ICloneable<DocumentState>
 {
+    public static string FORMAT_VERSION = "v0.2";
+
+    public string version;
     public List<SpriteFrame> frames = new List<SpriteFrame>();
     public List<Animation> animations = new List<Animation>();
 
+    public void MigrateVersion()
+    {
+        // v0.1
+        if (version == null)
+        {
+            foreach (var anim in animations)
+            {
+                for (int i = 0; i < anim.keyframes.Count; i++)
+                {
+                    int frIdx = frames.IndexOf(anim.keyframes[i].frame.Value);
+                    if (frIdx != -1)
+                    {
+                        anim.keyframes[i].frameIdx = frIdx;
+                    }
+
+                    anim.keyframes[i].frame = null;
+                }
+            }
+        }
+        else if (version != FORMAT_VERSION)
+        {
+            throw new FormatException($"Document has invalid/unknown format version (was it saved with a newer version of the tool?)\nDocument Version: {version}");
+        }
+
+        version = FORMAT_VERSION;
+    }
+
+    public void RecalcMetrics(TextureManager textureManager)
+    {
+        for (int i = 0; i < frames.Count; i++)
+        {
+            var frame = frames[i];
+            frame.CalcMetrics(textureManager);
+            frames[i] = frame;
+        }
+    }
+
     public DocumentState Clone()
     {
-        DocumentState clone = new DocumentState();
+        DocumentState clone = new DocumentState()
+        {
+            version = FORMAT_VERSION
+        };
         clone.frames = Clone(frames);
         clone.animations = DeepClone(animations);
         return clone;
@@ -138,14 +252,6 @@ public class DocumentState : ICloneable<DocumentState>
             frame.srcPath = frame.srcPath.Replace('\\', '/');
             frames[i] = frame;
         }
-
-        foreach (var anim in animations)
-        {
-            foreach (var keyframe in anim.keyframes)
-            {
-                keyframe.frame.srcPath = keyframe.frame.srcPath.Replace('\\', '/');
-            }
-        }
     }
 
     public void MakePathsRelative(string rootDirectory)
@@ -155,14 +261,6 @@ public class DocumentState : ICloneable<DocumentState>
             var frame = frames[i];
             frame.srcPath = Path.GetRelativePath(rootDirectory, frame.srcPath);
             frames[i] = frame;
-        }
-
-        foreach (var anim in animations)
-        {
-            foreach (var keyframe in anim.keyframes)
-            {
-                keyframe.frame.srcPath = Path.GetRelativePath(rootDirectory, keyframe.frame.srcPath);
-            }
         }
     }
 
@@ -175,14 +273,6 @@ public class DocumentState : ICloneable<DocumentState>
             var frame = frames[i];
             frame.srcPath = Path.Combine(rootDirectory, frame.srcPath);
             frames[i] = frame;
-        }
-
-        foreach (var anim in animations)
-        {
-            foreach (var keyframe in anim.keyframes)
-            {
-                keyframe.frame.srcPath = Path.Combine(rootDirectory, keyframe.frame.srcPath);
-            }
         }
     }
 
