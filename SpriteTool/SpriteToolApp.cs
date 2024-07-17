@@ -299,6 +299,39 @@ public class SpriteToolApp : ToolApp
                 ImGui.EndDisabled();
             }
 
+            if (activeAnimation == null)
+            {
+                ImGui.BeginDisabled();
+            }
+
+            if (ImGui.MenuItem("Mirror Animation Horizontally") && activeAnimation != null)
+            {
+                RegisterUndo("Mirror Animation Horizontally");
+                for (int i = 0; i < activeAnimation.keyframes.Count; i++)
+                {
+                    activeAnimation.keyframes[i].mirrorX = !activeAnimation.keyframes[i].mirrorX;
+                }
+            }
+
+            if (ImGui.MenuItem("Mirror Animation Vertically") && activeAnimation != null)
+            {
+                RegisterUndo("Mirror Animation Vertically");
+                for (int i = 0; i < activeAnimation.keyframes.Count; i++)
+                {
+                    activeAnimation.keyframes[i].mirrorY = !activeAnimation.keyframes[i].mirrorY;
+                }
+            }
+
+            if (ImGui.MenuItem("Offset Animation Keyframes") && activeAnimation != null)
+            {
+                GetWindow<OffsetKeyframesWindow>();
+            }
+
+            if (activeAnimation == null)
+            {
+                ImGui.EndDisabled();
+            }
+
             ImGui.EndMenu();
         }
 
@@ -350,6 +383,7 @@ public class SpriteToolApp : ToolApp
             // pack all frames into a texture sheet
             PackingRectangle[] rects = new PackingRectangle[activeDocument.frames.Count];
             Rectangle[] actualRects = new Rectangle[rects.Length];
+            int[] indexMap = new int[rects.Length];
 
             for (int i = 0; i < rects.Length; i++)
             {
@@ -376,6 +410,8 @@ public class SpriteToolApp : ToolApp
                 // account for 1 pixel padding when copying data into atlas
                 Rectangle actualRect = new Rectangle((int)rects[i].X + 1, (int)rects[i].Y + 1, (int)rects[i].Width - 2, (int)rects[i].Height - 2);
                 actualRects[i] = actualRect;
+
+                indexMap[rects[i].Id] = i;
 
                 Texture2D srcTex = activeDocument.frames[rects[i].Id].GetTexture(textureManager);
                 Color[] srcData = new Color[actualRects[i].Width * actualRects[i].Height];
@@ -405,6 +441,7 @@ public class SpriteToolApp : ToolApp
                 for (int j = 0; j < srcAnim.keyframes.Count; j++)
                 {
                     var keyframe = srcAnim.keyframes[j];
+                    var frameIdx = indexMap[keyframe.frameIdx];
                     var frame = activeDocument.frames[keyframe.frameIdx];
                     Vector2 frameOffset = frame.offset;
 
@@ -422,8 +459,10 @@ public class SpriteToolApp : ToolApp
 
                     exportDoc.animations[i].keyframes[j] = new ExportKeyframe
                     {
-                        frame = keyframe.frameIdx,
+                        frame = frameIdx,
                         duration = keyframe.duration,
+                        mirrorX = keyframe.mirrorX,
+                        mirrorY = keyframe.mirrorY,
                         offset = keyframe.offset + frameOffset,
                         motionDelta = keyframe.motionDelta,
                         hitboxes = keyframe.hitboxes.ToArray(),

@@ -6,6 +6,8 @@ public struct ExportKeyframe
 {
     public int duration;
     public int frame;
+    public bool mirrorX;
+    public bool mirrorY;
     public Vector2 offset;
     public Vector2 motionDelta;
     public Hitbox[] hitboxes;

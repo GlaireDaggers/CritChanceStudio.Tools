@@ -8,8 +8,15 @@ public class EditorWindow
 {
     public string name = "Editor Window";
 
+    private bool _close = false;
+
     public EditorWindow()
     {
+    }
+
+    public void Close()
+    {
+        _close = true;
     }
 
     public virtual ImGuiWindowFlags GetWindowFlags()
@@ -27,6 +34,12 @@ public class EditorWindow
         {
             OnGUI();
             ImGui.End();
+        }
+
+        if (_close)
+        {
+            open = false;
+            _close = false;
         }
     }
 
